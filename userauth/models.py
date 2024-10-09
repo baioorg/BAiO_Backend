@@ -8,18 +8,20 @@ from django.contrib.auth.models import AbstractUser
 class User(AbstractUser):
     first_name = models.CharField(max_length=150)
     last_name = models.CharField(max_length=150)
-    username = models.CharField(max_length=150, unique=True)
+    username = None
     email = models.EmailField(unique=True)
     password = models.CharField(max_length=128)  # Usually hashed
-    country = models.CharField(max_length=150, blank=True)
-    affiliation = models.CharField(max_length=150, blank=True)
-    position = models.CharField(max_length=150, blank=True)
-    field_of_study = models.CharField(max_length=150, blank=True)
+    country = models.CharField(max_length=150)
+    affiliation = models.CharField(max_length=150)
+    position = models.CharField(max_length=150)
+    field_of_study = models.CharField(max_length=150)
     date_joined = models.DateTimeField(auto_now_add=True)
     last_login = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
 
+
     REQUIRED_FIELDS = []
+    USERNAME_FIELD = 'email'
 
     def get_auth_info(self):
         return {
