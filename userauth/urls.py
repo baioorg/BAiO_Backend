@@ -1,8 +1,10 @@
 
+
 from django.urls import path
-from dj_rest_auth.views import LoginView
+from .views import RegisterView
+
 
 urlpatterns = [
-    path('login', LoginView.as_view(), name='login')
+    path('register', RegisterView.as_view())
 
 ]
