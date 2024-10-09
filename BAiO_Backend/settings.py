@@ -38,7 +38,11 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "rest_framework.authtoken",
+    "dj_rest_auth",
     "BAiO_App",
+    "userauth",
+
 ]
 
 MIDDLEWARE = [
@@ -123,3 +127,16 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# This automatically updates the session cookies.
+REST_AUTH = {
+    "USE_JWT": True,
+    "JWT_AUTH_COOKIE": 'BAIOjwtauth_cookie',
+    "JWT_AUTH_REFRESH_COOKIE": 'BAIOjwtauth_refresh_cookie'
+}
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "dj_rest_auth.jwt_auth.JWTCookieAuthentication"
+    )
+}
