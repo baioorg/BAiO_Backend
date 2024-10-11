@@ -1,8 +1,19 @@
 from django.db import models
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
 # Create your models here.
 
-class User(models.Model):
+class UserManager(BaseUserManager):
+    def create_user(self, username, email, password, **extra_info):
+
+        user = self.model(username=username, email=email, **extra_info)
+        user.set_password(password)
+        if(user.is_valid()):
+            user.save()
+
+        return user
+
+class User(AbstractBaseUser):
     first_name = models.CharField(max_length=150)
     last_name = models.CharField(max_length=150)
     username = models.CharField(max_length=150, unique=True)
@@ -15,6 +26,8 @@ class User(models.Model):
     date_joined = models.DateTimeField(auto_now_add=True)
     last_login = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
+
+    objects= UserManager()
     
     def get_auth_info(self):
         return {
@@ -37,3 +50,4 @@ class User(models.Model):
     
     def __str__(self):
         return self.username
+
