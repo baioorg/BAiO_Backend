@@ -9,7 +9,7 @@ class UserManager(BaseUserManager):
         user = self.model(username=username, email=email, **extra_info)
         user.set_password(password)
         if(user.is_valid()):
-            user.save()
+            user.save(using=self._db)
 
         return user
 

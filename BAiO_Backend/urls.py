@@ -25,7 +25,7 @@ urlpatterns = [
     # User Urls?
     path("user/info/",  Info.as_view()),
     path("user/auth/", Authentication.as_view()),
-    path("user/register", Register.as_view(), name="register_new_user"),
+    path("user/register/", Register.as_view(), name="register_new_user"),
 
     
 ]

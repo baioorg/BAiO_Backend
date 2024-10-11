@@ -3,21 +3,24 @@ from django.contrib.auth import authenticate
 from .models import User
     
 class UserAuthSerializer(serializers.ModelSerializer):
-    username = serializers.CharField()
-    password = serializers.CharField()
+    class Meta:
+        model = User
+        fields = [
+            'username',
+            'password'
+        ]
 
     def validate(self, data):
         user = authenticate(username=data["username"], password=data["password"])
         if user and user.is_active:
             return user
         else:
-            return None
+            raise serializers.ValidationError('Invalid credentials')
 
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            'id',
             'first_name',
             'last_name',
             'username',
@@ -27,9 +30,6 @@ class RegisterSerializer(serializers.ModelSerializer):
             'affiliation',
             'position',
             'field_of_study',
-            'date_joined',
-            'last_login',
-            'is_active'
         ]
 
     def create(self, val_data):
