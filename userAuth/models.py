@@ -4,21 +4,27 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 # Create your models here.
 
 class UserManager(BaseUserManager):
-    def create_user(self, username, email, password, **extra_info):
+    def create_user(self, username, email, password=None, **extra_fields):
+        """Creates and saves a User with the given username, email, and password."""
+        if not email:
+            raise ValueError('The Email field is required')
+        if not username:
+            raise ValueError('The Username field is required')
+        email = self.normalize_email(email)
+        user = self.model(username=username, email=email, **extra_fields)
 
-        user = self.model(username=username, email=email, **extra_info)
+        # Hash the password before saving the user
         user.set_password(password)
-        if(user.is_valid()):
-            user.save(using=self._db)
-
+        user.save(using=self._db)
         return user
 
-class User(AbstractBaseUser):
+
+
+class User(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=150)
     last_name = models.CharField(max_length=150)
     username = models.CharField(max_length=150, unique=True)
     email = models.EmailField(unique=True)
-    password = models.CharField(max_length=128)  # Usually hashed
     country = models.CharField(max_length=150, blank=True)
     affiliation = models.CharField(max_length=150, blank=True)
     position = models.CharField(max_length=150, blank=True)
@@ -28,6 +34,21 @@ class User(AbstractBaseUser):
     is_active = models.BooleanField(default=True)
 
     objects= UserManager()
+
+    groups = models.ManyToManyField(
+        'auth.Group',
+        blank=True,
+        related_name='customer_user_permissions_set',
+    )
+
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        blank=True,
+        related_name='customer_user_permissions_set'
+    )
+
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['email']
     
     def get_auth_info(self):
         return {

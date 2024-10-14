@@ -9,20 +9,13 @@ from rest_framework.response import Response
 
 # Create your views here.
 
-"""
-user/auth
-user/info
-user/register
-
-"""
-
 
 class Register(APIView):
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         if(serializer.is_valid()):
             serializer.save()
-            return Response(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
              print("placeholder: user already exists")
              return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)    
@@ -34,12 +27,12 @@ class Authentication(APIView):
         serializer = UserAuthSerializer(data=request.data)
         if(serializer.is_valid()):
             user = serializer.validated_data
-            login(request, user)
+            
             refresh = RefreshToken.for_user(user)
-
 
             return Response({'refresh': str(refresh), 'access': str(refresh.access_token)}, status=status.HTTP_200_OK)
         else:
+            print("authenticator error bad request")
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class Info(APIView):
