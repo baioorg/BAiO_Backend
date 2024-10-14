@@ -8,7 +8,7 @@ from .models import User
 class UserRegistrationTests(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.register_url = 'user/register/'
+        self.register_url = reverse('register_new_user')
 
         self.user_data = {
             "first_name": "Ole",
@@ -28,28 +28,28 @@ class UserRegistrationTests(TestCase):
 
         response = self.client.post(self.register_url, self.user_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['username'], self.user_data['username'])
+        self.assertNotIn('password', response.data)
 
     def test_register_already_existing_username(self):
-        User.objects.create_user({
-            "username": "olenor",
-            "email": "olenor@gmail.no",
-            "password": "oleerkul231"
-            })
+        User.objects.create_user(
+            username = "olenor",
+            email = "olenor@gmail.no",
+            password = "oleerkul231"
+            )
         
         response = self.client.post(self.register_url, self.user_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_register_already_existing_email(self):
-        User.objects.create_user({
-            "username": "olenorma",
-            "email": "olenorm@ole.no",
-            "password": "oleerkul231"
-            })
+        User.objects.create_user(
+            username = "olenorma",
+            email = "olenorm@ole.no",
+            password = "oleerkul231"
+            )
         
         response = self.client.post(self.register_url, self.user_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data['username'], self.user_data['username'])
-        self.assertNotIn('password', response.data)
 
     def test_register_missing_username(self):
         self.user_data["username"] = None
@@ -74,7 +74,7 @@ class UserRegistrationTests(TestCase):
 class UserLoginTests(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.auth_url = 'user/auth/'
+        self.auth_url = '/user/auth/'
 
         self.user_data = {
             "username": "olenor",
@@ -91,8 +91,11 @@ class UserLoginTests(TestCase):
             "password": "feilpassord"
             }
         
+        User.objects.create_user(self.user_data, email="olenorm@gmail.com")
+        
     def test_successful_login(self):
-        response = self.client.post(self.auth_url, self.user.data, format='json')
+        
+        response = self.client.post(self.auth_url, self.user_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_fail_wrong_username(self):
