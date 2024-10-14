@@ -56,6 +56,7 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',  # The port the frontend is running on
+    'https://baio.netlify.app', # The url of the frontend
 ]
 
 AUTH_USER_MODEL = 'userAuth.User'
