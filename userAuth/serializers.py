@@ -56,7 +56,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 # Serializer for user information
-class InfoSerializer(serializers.ModelSerializer):
+class GetInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = User 
         fields = [
@@ -70,3 +70,18 @@ class InfoSerializer(serializers.ModelSerializer):
             'field_of_study',
             'date_joined'
         ]
+
+# S
+class SetInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User 
+        fields = [
+            'first_name',
+            'last_name',
+            'country',
+            'affiliation',
+            'position',
+            'field_of_study',
+        ]
+        
+

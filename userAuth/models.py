@@ -89,7 +89,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             'field_of_study': self.field_of_study,
             'date_joined': self.date_joined,
         }
-    
+
     def __str__(self):
         # Returns a string representation of the user
         #
