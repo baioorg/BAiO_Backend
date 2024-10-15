@@ -18,15 +18,28 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from userAuth.views import Authentication, Register, GetInfoView, UpdateInfoView
+from chat.views import *
 
 urlpatterns = [
     path("admin/", admin.site.urls),
 
-    # User Urls?
+    # User Urls
     path("user/getInfo/",  GetInfoView.as_view()),
-    path('user/updateInfo/', UpdateInfoView.as_view()),
+    path("user/updateInfo/", UpdateInfoView.as_view()),
     path("user/auth/", Authentication.as_view()),
     path("user/register/", Register.as_view(), name="register_new_user"),
+
+    # Chat urls
+    path("chat/getConversation/", GetConversationView.as_view()),
+    path("chat/getConversations/", GetConversationsView.as_view()),
+    path("chat/renameConversation/", RenameConversationView.as_view()),
+    path("chat/createConversation/", CreateConversationView.as_view()),
+    
+    # Cannot be tested through postman, use frontend or curl with this command to test. 
+    # Also make sure you have a valid OpenAI API Key in settings.py before running.
+    # curl -X POST http://localhost:8000/chat/sendMessage/ -H "Content-Type: application/json" -H "Authorization: Bearer %ACCESS_KEY%" -d "{\"conversation_id\": %CONVERSATION_ID%, \"content\": \"%TEST MESSAGE%\"}"
+    path("chat/sendMessage/", SendMessageView.as_view())
+
 
     
 ]

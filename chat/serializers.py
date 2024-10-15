@@ -1,16 +1,24 @@
 from rest_framework import serializers
+from .models import Conversation, Message
 
     
-class GetConversationsSerializer(serializers.ModelSerializer):
+class MessageSerializer(serializers.ModelSerializer):
     class Meta:
+        model = Message
+        fields = ['id', 'content', 'role', 'created_at']
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'created_at': {'read_only': True},
+        }
         
-        fields = [
-            'user_id'
-        ]
 
-class GetConversationSerializer(serializers.ModelSerializer):
+class ConversationSerializer(serializers.ModelSerializer):
+    messages = MessageSerializer(many=True)
+
     class Meta:
-        fields = [
-            'user_id',
-            'conversation_id'
-        ]
+        model = Conversation
+        fields = ['id', 'title', 'messages', 'created_at']
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'created_at': {'read_only': True}
+        }

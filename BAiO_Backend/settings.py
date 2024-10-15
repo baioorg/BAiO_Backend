@@ -22,6 +22,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-&i-m%-u!y(s90msf46n^m90fq04twgc=!cuhu5w8cd$_f4lg54"
 
+OPENAI_API_KEY = "%ADD OPEN AI API KEY HERE%"
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -95,6 +97,8 @@ DATABASES = {
         "NAME": BASE_DIR / "db.sqlite3",
     }
 }
+
+
 
 
 # Password validation
