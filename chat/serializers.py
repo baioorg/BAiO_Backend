@@ -55,6 +55,12 @@ class APIKeySerializer(serializers.ModelSerializer):
         )
 
         return apikey
+    
+class RenameConversationSerializer(serializers.Serializer):
+    conversation_id = serializers.IntegerField(required=True)
+    title = serializers.CharField(required=True, max_length=255)
+
+
         
 
 

@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from .models import Conversation, Message, APIKey
-from .serializers import ConversationSerializer, ConversationReferenceSerializer, MessageSerializer, APIKeySerializer
+from .serializers import *
 from .baio_container.openai_container import Message_Container
 from django.http import StreamingHttpResponse
 from queue import Queue
@@ -64,20 +64,24 @@ class RenameConversationView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+
+        serializer = RenameConversationSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
         user = request.user
         conversation_id = request.data['conversation_id']
+        new_title = request.data['title']
 
         try:
             conversation = Conversation.objects.get(id=conversation_id, user=user)
         except Conversation.DoesNotExist:
             return Response(f"There are no conversations with id {conversation_id} connected to this user", status=status.HTTP_404_NOT_FOUND)
     
-        serializer = ConversationSerializer(conversation, data=request.data, partial=True)
-        if(serializer.is_valid()):
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        conversation.title = new_title
+        conversation.save()
+
+        return Response(f"Conversation successfully renamed to {new_title}", status=status.HTTP_200_OK)
 
 class AddAPIKeyView(APIView):
 
