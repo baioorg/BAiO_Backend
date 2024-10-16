@@ -35,9 +35,10 @@ class RegisterSerializer(serializers.ModelSerializer):
             'affiliation',
             'position',
             'field_of_study',
+            'date_joined'
         ]
         extra_kwargs = {
-            'password': {'write_only': True}
+            'password': {'write_only': True},
         }
 
     def create(self, val_data):
