@@ -24,6 +24,20 @@ class ConversationSerializer(serializers.ModelSerializer):
             'title': {'required': False}
         }
 
+class ConversationReferenceSerializer(serializers.ModelSerializer):
+    message_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Conversation
+        fields = ['id', 'title', 'message_count', 'created_at']
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'created_at': {'read_only': True},
+        }
+
+    def get_message_count(self, obj):
+        return obj.messages.count()
+
 class APIKeySerializer(serializers.ModelSerializer):
     class Meta:
         model = APIKey

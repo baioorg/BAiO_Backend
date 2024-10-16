@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from .models import Conversation, Message, APIKey
-from .serializers import ConversationSerializer, MessageSerializer, APIKeySerializer
+from .serializers import ConversationSerializer, ConversationReferenceSerializer, MessageSerializer, APIKeySerializer
 from .baio_container.openai_container import Message_Container
 from django.http import StreamingHttpResponse
 from queue import Queue
@@ -20,7 +20,7 @@ class GetConversationsView(APIView):
         try:
             user = request.user
             conversations = Conversation.objects.filter(user=user).order_by('-created_at')
-            serializer = ConversationSerializer(conversations, many=True)
+            serializer = ConversationReferenceSerializer(conversations, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except ObjectDoesNotExist:
             return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
@@ -33,14 +33,14 @@ class GetConversationView(APIView):
     def get(self, request):
         try:
             user = request.user
-            conversation_id = request.data['conversation_id']
+            conversation_id = request.query_params.get('conversation_id')
             
             conversation = Conversation.objects.get(id=conversation_id, user=user)
             serializer = ConversationSerializer(conversation)
 
             return Response(serializer.data, status=status.HTTP_200_OK)
         except ObjectDoesNotExist:
-            return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
+            return Response("could not find conversation", status=status.HTTP_404_NOT_FOUND)
         
 class CreateConversationView(APIView):
 
