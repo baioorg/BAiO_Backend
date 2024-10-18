@@ -1,14 +1,30 @@
 from django.db import models
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
 # Create your models here.
 
+class UserManager(BaseUserManager):
+    def create_user(self, username, email, password=None, **extra_fields):
+        """Creates and saves a User with the given username, email, and password."""
+        if not email:
+            raise ValueError('The Email field is required')
+        if not username:
+            raise ValueError('The Username field is required')
+        email = self.normalize_email(email)
+        user = self.model(username=username, email=email, **extra_fields)
 
-class User(models.Model):
+        # Hash the password before saving the user
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+
+
+class User(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=150)
     last_name = models.CharField(max_length=150)
     username = models.CharField(max_length=150, unique=True)
     email = models.EmailField(unique=True)
-    password = models.CharField(max_length=128)  # Usually hashed
     country = models.CharField(max_length=150, blank=True)
     affiliation = models.CharField(max_length=150, blank=True)
     position = models.CharField(max_length=150, blank=True)
@@ -16,6 +32,23 @@ class User(models.Model):
     date_joined = models.DateTimeField(auto_now_add=True)
     last_login = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
+
+    objects= UserManager()
+
+    groups = models.ManyToManyField(
+        'auth.Group',
+        blank=True,
+        related_name='customer_user_permissions_set',
+    )
+
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        blank=True,
+        related_name='customer_user_permissions_set'
+    )
+
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['email']
     
     def get_auth_info(self):
         return {
@@ -38,36 +71,4 @@ class User(models.Model):
     
     def __str__(self):
         return self.username
-    
-class LLM(models.Model):
-    title = models.CharField(max_length=150)
-
-    def __str__(self):
-        return self.title
-    
-class ApiKey(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    title = models.CharField(max_length=150)
-    key = models.CharField(max_length=128)
-    LargeLanguageModel = models.ForeignKey(LLM, on_delete=models.CASCADE)
-    date_created = models.DateTimeField(auto_now_add=True)
-    is_active = models.BooleanField(default=True)
-    
-    def get_key_info(self):
-        return {
-            'key': self.key,
-            'date_created': self.date_created,
-            'is_active': self.is_active,
-        }
-    
-# class Message(models.Model):
-#     text = models.TextField()
-#     date_sent = models.DateTimeField(auto_now_add=True)
-    
-#     def __str__(self):
-#         return self.title
-
-# class UserMessage(models.Model):
-#     user = models.ForeignKey(User, on_delete=models.CASCADE)
-#     message = Message
 
