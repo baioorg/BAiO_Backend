@@ -60,6 +60,8 @@ class RenameConversationSerializer(serializers.Serializer):
     conversation_id = serializers.IntegerField(required=True)
     title = serializers.CharField(required=True, max_length=255)
 
+class DeleteConversationSerializer(serializers.Serializer):
+    conversation_id = serializers.IntegerField(required=True)
 
         
 
