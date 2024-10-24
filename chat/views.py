@@ -12,8 +12,6 @@ from queue import Queue
 
 # Create your views here.
 
-######### GET CONVERSATION METHODS NOT WORKING
-
 class GetConversationsView(APIView):
 
     permission_classes = [IsAuthenticated]
