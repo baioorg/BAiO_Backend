@@ -40,7 +40,7 @@ class GetConversationView(APIView):
 
             return Response(serializer.data, status=status.HTTP_200_OK)
         except ObjectDoesNotExist:
-            return Response("could not find conversation", status=status.HTTP_404_NOT_FOUND)
+            return Response("Could not find conversation", status=status.HTTP_404_NOT_FOUND)
         
 class CreateConversationView(APIView):
     permission_classes = [IsAuthenticated]

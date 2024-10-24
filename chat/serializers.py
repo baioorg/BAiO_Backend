@@ -13,7 +13,7 @@ class MessageSerializer(serializers.ModelSerializer):
         
 
 class ConversationSerializer(serializers.ModelSerializer):
-    messages = MessageSerializer(many=True, read_only=True)
+    messages = serializers.SerializerMethodField()
 
     class Meta:
         model = Conversation
@@ -23,6 +23,10 @@ class ConversationSerializer(serializers.ModelSerializer):
             'created_at': {'read_only': True},
             'title': {'required': False}
         }
+
+    def get_messages(self, obj):
+        messages = obj.messages.filter(role__in=['user', 'baio'])
+        return MessageSerializer(messages, many=True).data
 
 class ConversationReferenceSerializer(serializers.ModelSerializer):
     message_count = serializers.SerializerMethodField()
