@@ -43,19 +43,23 @@ class GetConversationView(APIView):
             return Response("could not find conversation", status=status.HTTP_404_NOT_FOUND)
         
 class CreateConversationView(APIView):
-
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         user = request.user
-        conversation = Conversation.objects.create(user=user)
+        # Get the title from the request body, default to an empty string if not provided
+        title = request.data.get('title', '')
+
+        # Create the conversation with the user and the optional title
+        conversation = Conversation.objects.create(user=user, title=title)
+        
         Message.objects.create(
             conversation=conversation,
             content="You are BAiO, a chat bot who is an expert on biology and genomic data.",
             role='system'
         )
-        serializer = ConversationSerializer(conversation)
 
+        serializer = ConversationSerializer(conversation)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         
