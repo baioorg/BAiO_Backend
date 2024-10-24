@@ -34,6 +34,7 @@ urlpatterns = [
     path("chat/getConversations/", GetConversationsView.as_view()),
     path("chat/renameConversation/", RenameConversationView.as_view()),
     path("chat/createConversation/", CreateConversationView.as_view()),
+    path("chat/deleteConversation/", DeleteConversation.as_view()),
     path("chat/addAPIKey/", AddAPIKeyView.as_view()),
     
     # Cannot be tested through postman, use frontend or curl with this command to test. 
