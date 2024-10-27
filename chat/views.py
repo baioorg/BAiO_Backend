@@ -192,3 +192,12 @@ class SendMessageView(APIView):
 
         return StreamingHttpResponse(response_generator(), content_type='text/plain')
 
+
+class GetAPIKeysView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        apikeys = APIKey.objects.filter(user=user)
+        serializer = APIKeySerializer(apikeys, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

@@ -10,6 +10,11 @@ Run Tests Command:
 python manage.py test
 ```
 
+Clear and reset database:
+```
+python manage.py flush
+```
+
 Migrate Database:
 ```
 python manage.py makemigrations
@@ -320,6 +325,33 @@ Authorization: Bearer %ACCESS_TOKEN%
   "nickname": "OpenAI Key",
   "user": 1
 }
+```
+
+### 7. Get API Keys
+**URL:** `/chat/getApiKeys/`  
+**Method:** `GET`  
+**Authentication:** Requires Bearer Token  
+**Description:** Retrieves all API keys associated with the authenticated user.
+
+**Request Headers:**
+```
+Authorization: Bearer %ACCESS_TOKEN%
+```
+
+**Response Example:**
+```json
+[
+  {
+    "nickname": "OpenAI Key",
+    "apiProvider": "OpenAI",
+    "created_at": "2024-10-27T14:23:35.321Z"
+  },
+  {
+    "nickname": "Second API Key",
+    "apiProvider": "Custom Provider",
+    "created_at": "2024-10-27T15:42:13.875Z"
+  }
+]
 ```
 
 ### 7. Send a Message
