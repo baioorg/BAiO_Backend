@@ -1,0 +1,26 @@
+{
+    "LLM-providers": [
+        {
+            "id": 1,
+            "name": "OpenAI",
+            "models": [
+                {
+                    "id": 1,
+                    "name": "GPT-4o"
+                },
+                {
+                    "id": 2,
+                    "name": "GPT-4o mini"
+                },
+                {
+                    "id": 3,
+                    "name": "OpenAI o1-preview"
+                },
+                {
+                    "id": 4,
+                    "name": "OpenAI o1-mini"
+                }
+            ]
+        }
+    ]
+}

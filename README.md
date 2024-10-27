@@ -21,6 +21,11 @@ python manage.py makemigrations
 python manage.py migrate
 ```
 
+Populate LLM-providers table:
+```
+python manage.py load_llm_data
+```
+
 # Backend API Documentation
 
 This document outlines the endpoints available in the backend API, including request formats, HTTP methods, and the expected responses.
@@ -331,7 +336,7 @@ Authorization: Bearer %ACCESS_TOKEN%
 **URL:** `/chat/getApiKeys/`  
 **Method:** `GET`  
 **Authentication:** Requires Bearer Token  
-**Description:** Retrieves all API keys associated with the authenticated user.
+**Description:** Retrieves all API keys associated with the authenticated user, including their provider and associated models.
 
 **Request Headers:**
 ```
@@ -343,18 +348,69 @@ Authorization: Bearer %ACCESS_TOKEN%
 [
   {
     "nickname": "OpenAI Key",
-    "apiProvider": "OpenAI",
+    "provider": {
+      "id": 1,
+      "name": "OpenAI",
+      "models": [
+        { "id": 1, "name": "GPT-4o" },
+        { "id": 2, "name": "GPT-4o mini" },
+        { "id": 3, "name": "OpenAI o1-preview" },
+        { "id": 4, "name": "OpenAI o1-mini" }
+      ]
+    },
     "created_at": "2024-10-27T14:23:35.321Z"
   },
   {
     "nickname": "Second API Key",
-    "apiProvider": "Custom Provider",
+    "provider": {
+      "id": 2,
+      "name": "Custom Provider",
+      "models": [
+        { "id": 5, "name": "ModelX" },
+        { "id": 6, "name": "ModelY" }
+      ]
+    },
     "created_at": "2024-10-27T15:42:13.875Z"
   }
 ]
 ```
 
-### 7. Send a Message
+### 8. Get LLM Providers
+**URL:** `/chat/getLLMProviders/`  
+**Method:** `GET`  
+**Authentication:** Requires Bearer Token  
+**Description:** Retrieves all LLM providers along with their associated models.
+
+**Request Headers:**
+```
+Authorization: Bearer %ACCESS_TOKEN%
+```
+
+**Response Example:**
+```json
+[
+  {
+    "id": 1,
+    "name": "OpenAI",
+    "models": [
+      { "id": 1, "name": "GPT-4o" },
+      { "id": 2, "name": "GPT-4o mini" },
+      { "id": 3, "name": "OpenAI o1-preview" },
+      { "id": 4, "name": "OpenAI o1-mini" }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "OtherProvider",
+    "models": [
+      { "id": 5, "name": "ModelX" },
+      { "id": 6, "name": "ModelY" }
+    ]
+  }
+]
+```
+
+### 9. Send a Message
 **URL:** `/chat/sendMessage/`  
 **Method:** `POST`  
 **Authentication:** Requires Bearer Token  
