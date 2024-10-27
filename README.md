@@ -120,7 +120,27 @@ Authorization: Bearer %ACCESS_TOKEN%
 }
 ```
 
-### 4. Register User
+### 4. Refresh Access Token
+**URL:** `/user/refresh/`  
+**Method:** `POST`  
+**Authentication:** None required  
+**Description:** Refreshes the access token using a valid refresh token.  
+
+**Request Body:**
+```json
+{
+  "refresh": "%REFRESH_TOKEN%"
+}
+```
+
+**Response Example:**
+```json
+{
+  "access": "%NEW_ACCESS_TOKEN%"
+}
+```
+
+### 5. Register User
 **URL:** `/user/register/`  
 **Method:** `POST`  
 **Authentication:** None required  
