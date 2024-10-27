@@ -172,3 +172,5 @@ SIMPLE_JWT = {
 
 # CORS configurations
 CORS_ALLOW_CREDENTIALS = True 
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")

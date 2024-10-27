@@ -112,16 +112,25 @@ class AddAPIKeyView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        serializer = APIKeySerializer(data=request.data, context={'user': request.user})
+        
+        user = request.user
+        apikey_nickname = request.data['name']
+        apiProvider = request.data['apiProvider']
+        key = request.data['apiKey']
+                
+        try:
+            apiKeys = APIKey.objects.create(user=user, nickname = apikey_nickname, apiProvider = apiProvider, key = key)
+            
+            serializer = APIKeySerializer(apiKeys)
+            
+            return Response(f"APIKey successfully saved as {serializer.data['nickname']}", status=status.HTTP_200_OK)
+    
 
-        if(serializer.is_valid()):
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-
+        except APIKey.DoesNotExist:
+            return Response(f"Failed so save apiKey nicknamed {apikey_nickname}", status=status.HTTP_404_NOT_FOUND)
+        
+        
+        
         
 class SendMessageView(APIView):
 

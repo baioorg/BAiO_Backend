@@ -45,7 +45,7 @@ class ConversationReferenceSerializer(serializers.ModelSerializer):
 class APIKeySerializer(serializers.ModelSerializer):
     class Meta:
         model = APIKey
-        fields = ['key', 'nickname', 'created_at']
+        fields = ['key', 'nickname', 'apiProvider', 'created_at']
         extra_kwargs = {
             'key': {'write_only': True},
             'created_at': {'read_only': True}
@@ -55,7 +55,8 @@ class APIKeySerializer(serializers.ModelSerializer):
         apikey = APIKey.objects.create(
             user = self.context['user'],
             key = data['key'],
-            nickname = data['nickname']
+            nickname = data['nickname'],
+            apiProvider=data['apiProvider']
         )
 
         return apikey
