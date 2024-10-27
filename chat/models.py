@@ -18,6 +18,7 @@ class Message(models.Model):
 class APIKey(models.Model):
     key = models.CharField(max_length=255)
     nickname = models.CharField(max_length=255)
+    apiProvider = models.CharField(max_length=255, null=True)
     user = models.ForeignKey('userAuth.User', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
