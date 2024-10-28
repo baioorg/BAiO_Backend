@@ -28,6 +28,7 @@ urlpatterns = [
     path("user/updateInfo/", UpdateInfoView.as_view()),
     path("user/auth/", Authentication.as_view()),
     path("user/register/", Register.as_view(), name="register_new_user"),
+    path("user/refresh/", TokenRefreshView.as_view(), name="refresh_token"),
 
     # Chat urls
     path("chat/getConversation/", GetConversationView.as_view()),

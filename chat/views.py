@@ -190,7 +190,7 @@ class SendMessageView(APIView):
                 full_response.append(chunk)
                 yield chunk
 
-        
+
 
         return StreamingHttpResponse(response_generator(), content_type='text/plain')
 
