@@ -17,15 +17,34 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
-from userAuth.views import Info, Authentication, Register
+from userAuth.views import *
+from chat.views import *
 
 urlpatterns = [
     path("admin/", admin.site.urls),
 
-    # User Urls?
-    path("user/info/",  Info.as_view()),
+    # User Urls
+    path("user/getInfo/",  GetInfoView.as_view()),
+    path("user/updateInfo/", UpdateInfoView.as_view()),
     path("user/auth/", Authentication.as_view()),
     path("user/register/", Register.as_view(), name="register_new_user"),
+    path("user/refresh/", TokenRefreshView.as_view(), name="refresh_token"),
+
+    # Chat urls
+    path("chat/getConversation/", GetConversationView.as_view()),
+    path("chat/getConversations/", GetConversationsView.as_view()),
+    path("chat/renameConversation/", RenameConversationView.as_view()),
+    path("chat/createConversation/", CreateConversationView.as_view()),
+    path("chat/deleteConversation/", DeleteConversation.as_view()),
+    path("chat/addAPIKey/", AddAPIKeyView.as_view()),
+    path("chat/getApiKeys/", GetAPIKeysView.as_view()),
+    path("chat/getLLMProviders/", GetLLMProvidersView.as_view(), name="get_llm_providers"),
+    
+    # Cannot be tested through postman, use frontend or curl with this command to test. 
+    # Also make sure you have a valid OpenAI API Key in settings.py before running.
+    # curl -X POST http://localhost:8000/chat/sendMessage/ -H "Content-Type: application/json" -H "Authorization: Bearer %ACCESS_TOKEN%" -d "{\"conversation_id\": %CONVERSATION_ID%, \"apikey_nickname\": \"%APIKEY_NICKNAME%\", \"content\": \"%TEXT_PROMPT%\", \"model\": \"%LLM_MODEL%\"}"
+    path("chat/sendMessage/", SendMessageView.as_view())
+
 
     
 ]

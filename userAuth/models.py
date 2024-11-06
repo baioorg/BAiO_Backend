@@ -1,15 +1,27 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
-# Create your models here.
-
+# Custom user manager to handle user creation and management
 class UserManager(BaseUserManager):
     def create_user(self, username, email, password=None, **extra_fields):
-        """Creates and saves a User with the given username, email, and password."""
+        # Creates and saves a User with the given username, email, and password
+        #
+        # Args:
+        #     username (str): The user's unique username
+        #     email (str): The user's email address
+        #     password (str, optional): The user's password
+        #     **extra_fields: Additional fields to be saved in the User model
+        #
+        # Returns:
+        #     User: The created user instance
+        #
+        # Raises:
+        #     ValueError: If email or username is not provided
         if not email:
             raise ValueError('The Email field is required')
         if not username:
             raise ValueError('The Username field is required')
+        
         email = self.normalize_email(email)
         user = self.model(username=username, email=email, **extra_fields)
 
@@ -18,8 +30,9 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-
-
+# Custom User model with additional fields for user profile information
+# Inherits from AbstractBaseUser for core user functionality and
+# PermissionsMixin for Django's permission system
 class User(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=150)
     last_name = models.CharField(max_length=150)
@@ -33,7 +46,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_login = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
 
-    objects= UserManager()
+    objects = UserManager()
 
     groups = models.ManyToManyField(
         'auth.Group',
@@ -51,6 +64,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ['email']
     
     def get_auth_info(self):
+        # Returns a dictionary containing the user's authentication information
+        #
+        # Returns:
+        #     dict: A dictionary with username, email, and hashed password
         return {
             'username': self.username,
             'email': self.email,
@@ -58,6 +75,10 @@ class User(AbstractBaseUser, PermissionsMixin):
         }
     
     def get_profile_info(self):
+        # Returns a dictionary containing the user's profile information
+        #
+        # Returns:
+        #     dict: A dictionary with user's profile details
         return {
             'first_name': self.first_name,
             'last_name': self.last_name,
@@ -68,7 +89,10 @@ class User(AbstractBaseUser, PermissionsMixin):
             'field_of_study': self.field_of_study,
             'date_joined': self.date_joined,
         }
-    
-    def __str__(self):
-        return self.username
 
+    def __str__(self):
+        # Returns a string representation of the user
+        #
+        # Returns:
+        #     str: The user's username
+        return self.username

@@ -1,21 +1,45 @@
 from django.db import models
 from django.utils import timezone
-# Create your models here.
-class Conversation(models.Model):
-    user1 = models.ForeignKey('userAuth.User', on_delete=models.CASCADE)
-    started_at = models.DateTimeField(default=timezone.now)
-    ended_at = models.DateTimeField(null=True, blank=True)
+
+class LLMProvider(models.Model):
+    name = models.CharField(max_length=255)
 
     def __str__(self):
-        return f'{self.user1.username}\'s conversation'
-    
-class Message(models.Model):
-    ROLE_CHOICES = [
-        ('user', 'User'),
-        ('bot', 'Bot'),
-    ]
+        return self.name
 
+
+class Model(models.Model):
+    name = models.CharField(max_length=255)
+    provider = models.ForeignKey(LLMProvider, related_name="models", on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.name} ({self.provider.name})"
+
+
+class Conversation(models.Model):
+    user = models.ForeignKey('userAuth.User', on_delete=models.CASCADE)
+    title = models.CharField(max_length=255, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Conversation {self.id} with {self.user.username}'  # corrected to 'user' field
+
+
+class Message(models.Model):
     conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='messages')
-    sender_role = models.CharField(max_length=4, choices=ROLE_CHOICES)
     content = models.TextField()
-    sent_at = models.DateTimeField(default=timezone.now)
+    role = models.CharField(max_length=50, choices=[('user', 'User'), ('baio', 'BAiO'), ('system', 'System')])
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class APIKey(models.Model):
+    key = models.CharField(max_length=255)
+    nickname = models.CharField(max_length=255)
+    apiProvider = models.ForeignKey(LLMProvider, on_delete=models.CASCADE, related_name='apikeys')
+    user = models.ForeignKey('userAuth.User', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'nickname'], name='unique_nicknames_per_user')
+        ]
