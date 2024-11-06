@@ -106,22 +106,33 @@ class RenameConversationView(APIView):
         conversation.save()
 
         return Response(f"Conversation successfully renamed to {new_title}", status=status.HTTP_200_OK)
-
+    
 class AddAPIKeyView(APIView):
-
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        serializer = APIKeySerializer(data=request.data, context={'user': request.user})
+        user = request.user
+        apikey_nickname = request.data['name']
+        apiProvider_id = request.data['apiProvider']
+        key = request.data['apiKey']
+        
+        try:
+            # Retrieve the LLMProvider instance
+            apiProvider = LLMProvider.objects.get(id=apiProvider_id)
+            # Create the API key instance
+            apiKeys = APIKey.objects.create(user=user, nickname=apikey_nickname, apiProvider=apiProvider, key=key)
+            
+            serializer = APIKeySerializer(apiKeys)
+            return Response(f"APIKey successfully saved as {serializer.data['nickname']}", status=status.HTTP_200_OK)
+        
+        except LLMProvider.DoesNotExist:
+            return Response(f"LLMProvider with id={apiProvider_id} does not exist", status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response(f"Failed to save APIKey: {str(e)}", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        if(serializer.is_valid()):
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-
+        
+        
+        
         
 class SendMessageView(APIView):
 
@@ -179,7 +190,24 @@ class SendMessageView(APIView):
                 full_response.append(chunk)
                 yield chunk
 
-        
+
 
         return StreamingHttpResponse(response_generator(), content_type='text/plain')
 
+
+class GetAPIKeysView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        apikeys = APIKey.objects.filter(user=user)
+        serializer = APIKeySerializer(apikeys, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class GetLLMProvidersView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        providers = LLMProvider.objects.all()
+        serializer = LLMProviderSerializer(providers, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

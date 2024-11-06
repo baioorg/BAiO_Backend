@@ -28,6 +28,7 @@ urlpatterns = [
     path("user/updateInfo/", UpdateInfoView.as_view()),
     path("user/auth/", Authentication.as_view()),
     path("user/register/", Register.as_view(), name="register_new_user"),
+    path("user/refresh/", TokenRefreshView.as_view(), name="refresh_token"),
 
     # Chat urls
     path("chat/getConversation/", GetConversationView.as_view()),
@@ -36,6 +37,8 @@ urlpatterns = [
     path("chat/createConversation/", CreateConversationView.as_view()),
     path("chat/deleteConversation/", DeleteConversation.as_view()),
     path("chat/addAPIKey/", AddAPIKeyView.as_view()),
+    path("chat/getApiKeys/", GetAPIKeysView.as_view()),
+    path("chat/getLLMProviders/", GetLLMProvidersView.as_view(), name="get_llm_providers"),
     
     # Cannot be tested through postman, use frontend or curl with this command to test. 
     # Also make sure you have a valid OpenAI API Key in settings.py before running.

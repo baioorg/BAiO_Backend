@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from userAuth.serializers import RegisterSerializer, UserAuthSerializer, GetInfoSerializer, SetInfoSerializer
 from django.contrib.auth import login
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -49,6 +50,21 @@ class Authentication(APIView):
             # TODO: Improve error handling and logging
             print("Error: Authentication failed")
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+class TokenRefreshView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = TokenRefreshSerializer(data=request.data)
+        if serializer.is_valid():
+            refresh_token = serializer.validated_data['refresh']
+            refresh = RefreshToken(refresh_token)
+            access_token = str(refresh.access_token)
+
+            return Response({'access': access_token}, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class GetInfoView(APIView):
     
