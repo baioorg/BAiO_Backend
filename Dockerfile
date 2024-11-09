@@ -21,6 +21,7 @@ RUN python manage.py collectstatic --no-input
 
 # migrate db
 RUN python manage.py migrate
+RUN python manage.py load_llm_data
 
 # Run Gunicorn
 CMD ["gunicorn", "BAiO_Backend.wsgi:application", "--bind", "0.0.0.0:8000"]
