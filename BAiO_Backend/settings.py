@@ -29,7 +29,7 @@ OPENAI_API_KEY = "%ADD OPEN AI API KEY HERE%"
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["158.39.74.70", "localhost", "https://baio.netlify.app/"]
+ALLOWED_HOSTS = ["158.39.74.70", "localhost", "https://baio.netlify.app/", "127.0.0.1"]
 
 
 # Application definition
