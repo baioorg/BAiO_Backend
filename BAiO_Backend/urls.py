@@ -39,9 +39,10 @@ urlpatterns = [
     path("chat/addAPIKey/", AddAPIKeyView.as_view()),
     path("chat/getApiKeys/", GetAPIKeysView.as_view()),
     path("chat/getLLMProviders/", GetLLMProvidersView.as_view(), name="get_llm_providers"),
+    path("user/validateToken/", ValidateTokenView.as_view(), name="validateToken"),
     #TODO: Add url for delete api key
     #TODO: Add url for csv export
-    
+
     
     # Cannot be tested through postman, use frontend or curl with this command to test. 
     # Also make sure you have a valid OpenAI API Key in settings.py before running.
