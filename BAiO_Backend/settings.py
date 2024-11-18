@@ -63,6 +63,29 @@ CORS_ALLOWED_ORIGINS = [
     'https://baio.netlify.app', # The url of the frontend
 ]
 
+CORS_ALLOW_CREDENTIALS = True
+
+# For debugging purposes, we allow all headers
+CORS_ALLOW_HEADERS = [
+    'authorization',
+    'content-type',
+    'x-csrftoken',
+    'accept',
+    'accept-encoding',
+    'origin',
+    'user-agent',
+    'x-requested-with',
+]
+
+CORS_ALLOW_METHODS = [
+    'GET',
+    'POST',
+    'PUT',
+    'PATCH',
+    'DELETE',
+    'OPTIONS',  # Allow preflight requests
+]
+
 AUTH_USER_MODEL = 'userAuth.User'
 
 AUTHENTICATION_BACKENDS = [
@@ -169,8 +192,5 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),  # Important! Make sure "Bearer" is in all caps
 }
 
-
-# CORS configurations
-CORS_ALLOW_CREDENTIALS = True 
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
