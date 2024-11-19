@@ -7,6 +7,8 @@ from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework_simplejwt.tokens import AccessToken
+from jwt.exceptions import InvalidTokenError, ExpiredSignatureError
 
 # Views for user authentication and registration
 
@@ -103,3 +105,38 @@ class UpdateInfoView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ValidateTokenView(APIView):
+    """
+    API view for validating JWT tokens.
+    Handles POST requests to validate an access token.
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        token = request.data.get('token')
+        
+        if not token:
+            return Response(
+                {'error': 'Token is required'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            # This will raise an error if the token is invalid
+            AccessToken(token)
+            return Response(
+                {'valid': True}, 
+                status=status.HTTP_200_OK
+            )
+        except ExpiredSignatureError:
+            return Response(
+                {'valid': False, 'error': 'Token has expired'}, 
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        except InvalidTokenError:
+            return Response(
+                {'valid': False, 'error': 'Token is invalid'}, 
+                status=status.HTTP_401_UNAUTHORIZED
+            )
