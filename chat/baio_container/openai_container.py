@@ -19,7 +19,7 @@ class Message_Container(threading.Thread):
             stream = openai.chat.completions.create(
                 model = self.model,
                 messages = self.messages,
-                max_tokens=100,
+                max_tokens=1000,
                 stream=True
             )
 
@@ -28,7 +28,9 @@ class Message_Container(threading.Thread):
                 if content:
                     self.queue.put(content)
 
+            self.queue.put("DONE")
+
         except Exception as e:
-            self.queue.put(f"Exception: {str(e)}")
-            self.queue.put(None)
+            print(f"Error: {str(e)}")
+            self.queue.put("DONE")
 

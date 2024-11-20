@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Conversation, Message, APIKey
+from .models import Conversation, Message, APIKey, LLMProvider, Model
 
     
 class MessageSerializer(serializers.ModelSerializer):
@@ -42,20 +42,38 @@ class ConversationReferenceSerializer(serializers.ModelSerializer):
     def get_message_count(self, obj):
         return obj.messages.count()
 
+class ModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Model
+        fields = ['id', 'name']
+
+class LLMProviderSerializer(serializers.ModelSerializer):
+    models = ModelSerializer(many=True)  
+
+    class Meta:
+        model = LLMProvider
+        fields = ['id', 'name', 'models']
+
+
+
 class APIKeySerializer(serializers.ModelSerializer):
+    provider = LLMProviderSerializer(source='apiProvider', read_only=True)
+
     class Meta:
         model = APIKey
-        fields = ['key', 'nickname', 'created_at']
+        fields = ['key', 'nickname', 'provider', 'created_at']
         extra_kwargs = {
             'key': {'write_only': True},
             'created_at': {'read_only': True}
         }
 
+
     def create(self, data):
         apikey = APIKey.objects.create(
             user = self.context['user'],
             key = data['key'],
-            nickname = data['nickname']
+            nickname = data['nickname'],
+            apiProvider=data['apiProvider']
         )
 
         return apikey
@@ -66,7 +84,3 @@ class RenameConversationSerializer(serializers.Serializer):
 
 class DeleteConversationSerializer(serializers.Serializer):
     conversation_id = serializers.IntegerField(required=True)
-
-        
-
-
