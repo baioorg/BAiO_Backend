@@ -29,7 +29,7 @@ OPENAI_API_KEY = "%ADD OPEN AI API KEY HERE%"
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["158.39.74.70", "localhost", "baio.netlify.app", "kwality.no", "127.0.0.1"]
 
 
 # Application definition
@@ -61,6 +61,29 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',  # The port the frontend is running on
     'https://baio.netlify.app', # The url of the frontend
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+# For debugging purposes, we allow all headers
+CORS_ALLOW_HEADERS = [
+    'authorization',
+    'content-type',
+    'x-csrftoken',
+    'accept',
+    'accept-encoding',
+    'origin',
+    'user-agent',
+    'x-requested-with',
+]
+
+CORS_ALLOW_METHODS = [
+    'GET',
+    'POST',
+    'PUT',
+    'PATCH',
+    'DELETE',
+    'OPTIONS',  # Allow preflight requests
 ]
 
 AUTH_USER_MODEL = 'userAuth.User'
@@ -170,5 +193,4 @@ SIMPLE_JWT = {
 }
 
 
-# CORS configurations
-CORS_ALLOW_CREDENTIALS = True 
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")

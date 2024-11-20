@@ -10,10 +10,20 @@ Run Tests Command:
 python manage.py test
 ```
 
+Clear and reset database:
+```
+python manage.py flush
+```
+
 Migrate Database:
 ```
 python manage.py makemigrations
 python manage.py migrate
+```
+
+Populate LLM-providers table:
+```
+python manage.py load_llm_data
 ```
 
 # Backend API Documentation
@@ -110,7 +120,27 @@ Authorization: Bearer %ACCESS_TOKEN%
 }
 ```
 
-### 4. Register User
+### 4. Refresh Access Token
+**URL:** `/user/refresh/`  
+**Method:** `POST`  
+**Authentication:** None required  
+**Description:** Refreshes the access token using a valid refresh token.  
+
+**Request Body:**
+```json
+{
+  "refresh": "%REFRESH_TOKEN%"
+}
+```
+
+**Response Example:**
+```json
+{
+  "access": "%NEW_ACCESS_TOKEN%"
+}
+```
+
+### 5. Register User
 **URL:** `/user/register/`  
 **Method:** `POST`  
 **Authentication:** None required  
@@ -322,7 +352,85 @@ Authorization: Bearer %ACCESS_TOKEN%
 }
 ```
 
-### 7. Send a Message
+### 7. Get API Keys
+**URL:** `/chat/getApiKeys/`  
+**Method:** `GET`  
+**Authentication:** Requires Bearer Token  
+**Description:** Retrieves all API keys associated with the authenticated user, including their provider and associated models.
+
+**Request Headers:**
+```
+Authorization: Bearer %ACCESS_TOKEN%
+```
+
+**Response Example:**
+```json
+[
+  {
+    "nickname": "OpenAI Key",
+    "provider": {
+      "id": 1,
+      "name": "OpenAI",
+      "models": [
+        { "id": 1, "name": "GPT-4o" },
+        { "id": 2, "name": "GPT-4o mini" },
+        { "id": 3, "name": "OpenAI o1-preview" },
+        { "id": 4, "name": "OpenAI o1-mini" }
+      ]
+    },
+    "created_at": "2024-10-27T14:23:35.321Z"
+  },
+  {
+    "nickname": "Second API Key",
+    "provider": {
+      "id": 2,
+      "name": "Custom Provider",
+      "models": [
+        { "id": 5, "name": "ModelX" },
+        { "id": 6, "name": "ModelY" }
+      ]
+    },
+    "created_at": "2024-10-27T15:42:13.875Z"
+  }
+]
+```
+
+### 8. Get LLM Providers
+**URL:** `/chat/getLLMProviders/`  
+**Method:** `GET`  
+**Authentication:** Requires Bearer Token  
+**Description:** Retrieves all LLM providers along with their associated models.
+
+**Request Headers:**
+```
+Authorization: Bearer %ACCESS_TOKEN%
+```
+
+**Response Example:**
+```json
+[
+  {
+    "id": 1,
+    "name": "OpenAI",
+    "models": [
+      { "id": 1, "name": "GPT-4o" },
+      { "id": 2, "name": "GPT-4o mini" },
+      { "id": 3, "name": "OpenAI o1-preview" },
+      { "id": 4, "name": "OpenAI o1-mini" }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "OtherProvider",
+    "models": [
+      { "id": 5, "name": "ModelX" },
+      { "id": 6, "name": "ModelY" }
+    ]
+  }
+]
+```
+
+### 9. Send a Message
 **URL:** `/chat/sendMessage/`  
 **Method:** `POST`  
 **Authentication:** Requires Bearer Token  

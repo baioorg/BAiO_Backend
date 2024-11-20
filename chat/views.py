@@ -74,7 +74,8 @@ class DeleteConversation(APIView):
         
         conversation_id = request.data['conversation_id']
         try:
-            conversation = Conversation.objects.get(conversation_id=conversation_id, user=user)
+            # Changed conversation_id to id in the query
+            conversation = Conversation.objects.get(id=conversation_id, user=user)
         except Conversation.DoesNotExist:
             return Response(f"No conversation with id={conversation_id} belonging to this user was found", status=status.HTTP_404_NOT_FOUND)
         
@@ -106,22 +107,33 @@ class RenameConversationView(APIView):
         conversation.save()
 
         return Response(f"Conversation successfully renamed to {new_title}", status=status.HTTP_200_OK)
-
+    
 class AddAPIKeyView(APIView):
-
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        serializer = APIKeySerializer(data=request.data, context={'user': request.user})
+        user = request.user
+        apikey_nickname = request.data['name']
+        apiProvider_id = request.data['apiProvider']
+        key = request.data['apiKey']
+        
+        try:
+            # Retrieve the LLMProvider instance
+            apiProvider = LLMProvider.objects.get(id=apiProvider_id)
+            # Create the API key instance
+            apiKeys = APIKey.objects.create(user=user, nickname=apikey_nickname, apiProvider=apiProvider, key=key)
+            
+            serializer = APIKeySerializer(apiKeys)
+            return Response(f"APIKey successfully saved as {serializer.data['nickname']}", status=status.HTTP_200_OK)
+        
+        except LLMProvider.DoesNotExist:
+            return Response(f"LLMProvider with id={apiProvider_id} does not exist", status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response(f"Failed to save APIKey: {str(e)}", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        if(serializer.is_valid()):
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-
+        
+        
+        
         
 class SendMessageView(APIView):
 
@@ -152,34 +164,52 @@ class SendMessageView(APIView):
         message_history = Message.objects.filter(conversation=conversation).order_by('created_at')
 
         messages = [
-            {"role": message.role, "content": message.content} for message in message_history
+            {"role": 'assistant' if message.role == 'baio' else message.role, 
+             "content": message.content} 
+            for message in message_history
         ]
 
-        # Create a Queue to communicate between the thread and the generator
         queue = Queue()
-
-        # Start the threaded LLM container with messages and queue
         message_container = Message_Container(messages, queue, apikey, model)
         message_container.start()
-
-        # Streaming generator
 
         full_response = []
 
         def response_generator():
             while True:
-                chunk = queue.get()
-                if chunk is None:
-                    Message.objects.create(
-                        conversation=conversation,
-                        content=''.join(full_response),
-                        role='baio'
-                    )
-                    break
-                full_response.append(chunk)
-                yield chunk
-
-        
+                try:
+                    chunk = queue.get(timeout=2.0)
+                    if chunk == "DONE":
+                        if full_response:
+                            Message.objects.create(
+                                conversation=conversation,
+                                content=''.join(full_response),
+                                role='baio'
+                            )
+                        break
+                    print(f"Chunk: {chunk}")
+                    full_response.append(chunk)
+                    yield chunk
+                except Exception as e:
+                    print(f"Generator error: {str(e)}")
+                    continue
 
         return StreamingHttpResponse(response_generator(), content_type='text/plain')
 
+
+class GetAPIKeysView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        apikeys = APIKey.objects.filter(user=user)
+        serializer = APIKeySerializer(apikeys, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class GetLLMProvidersView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        providers = LLMProvider.objects.all()
+        serializer = LLMProviderSerializer(providers, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
