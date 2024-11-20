@@ -1,28 +1,55 @@
+version: "3.0"
 services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    container_name: nginx-proxy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    expose:
+      - 80
+      - 443
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./nginx-proxy/nginx/certs:/etc/nginx/certs
+      - ./nginx-proxy/nginx/vhost.d:/etc/nginx/vhost.d
+      - ./nginx-proxy/nginx/html:/usr/share/nginx/html
+      - ./nginx-proxy/nginx/dhparam:/etc/nginx/dhparam
+    environment:
+      DEFAULT_HOST: default.vhost
+
+  letsencrypt:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    container_name: nginx-proxy-le
+    restart: always
+    environment:
+      NGINX_PROXY_CONTAINER: nginx-proxy
+    depends_on:
+      - nginx-proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./nginx-proxy/nginx/certs:/etc/nginx/certs
+      - ./nginx-proxy/nginx/vhost.d:/etc/nginx/vhost.d
+      - ./nginx-proxy/nginx/html:/usr/share/nginx/html
+      - ./nginx-proxy/nginx/dhparam:/etc/nginx/dhparam
+
   baio_backend:
     volumes:
       - static:/static
       - sqllite_db:/BAiO_Backend/db
       - django_logs:/logs
-    build:
-      context: .
+    image: kwaloen91/baio_server
     expose:
       - 8000
     restart: always
-    
-  nginx:
-    build: ./nginx
-    volumes:
-      - static:/static #this is to make sure /static requests are routed to the shared volumne on host machine where django static files are stored
-      - nginx_logs:/var/log/nginx # logs available from where we defined in the nginx Dockerfile
-    ports:
-      - "8000:80"
-    depends_on:
-      - baio_backend
-    restart: always
+    environment:
+      VIRTUAL_PORT: 
+      VIRTUAL_HOST: kwality.no
+      LETSENCRYPT_HOST: kwality.no
+      LETSENCRYPT_EMAIL: kai.waloen@gmail.com 
+    stdin_open: true
+    tty: true
 
 volumes:
-  static:
-  sqllite_db:
-  django_logs:
-  nginx_logs:
+  db_data:
