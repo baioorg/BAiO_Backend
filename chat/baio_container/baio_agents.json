@@ -1,0 +1,81 @@
+{
+    "tools": [
+        {
+            "type": "function",
+            "function": {
+                "name": "aniseed_agent",
+                "description": "Handles queries related to the ANISEED (Ascidian Network for In Situ Expression and Embryological Data) database.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string",
+                            "description": "Natural language query about ascidian gene expression, developmental stages, anatomical structures, or any combination thereof."
+                        }
+                    },
+                    "required": ["query"],
+                    "additionalProperties": 0
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "baio_agent",
+                "description": "The main agent that coordinates between different tools and databases, including NCBI services like BLAST and E-utilities and api calls to the UCSC genome browser.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string",
+                            "description": "Natural language query describing desired search and the DNA or protein sequences."
+                        }
+                    },
+                    "required": ["query"],
+                    "additionalProperties": 0
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "csv_chatter_agent",
+                "description": "Allows you to interact with and analyze CSV files using natural language queries.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string",
+                            "description": "Natural Language query about the csv file"
+                        },
+                        "file_name": {
+                            "type": "string",
+                            "description": "Name of the csv file you want to analyze",
+                            "enum": []
+                        }
+                    },
+                    "required": ["query", "file_name"],
+                    "additionalProperties": 0
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "nl_to_go_agent",
+                "description": "sed when the input is a natural language written query containing gene names that need a GO annotation. Tool to find gene ontologies (using mygene), outputs data frame with GO & gene id annotated gene names",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string",
+                            "description": "A natural language string containing gene names to be processed."
+                        }
+                    },
+                    "required": ["query"],
+                    "additionalProperties": 0
+                }
+            }
+        }   
+    ]
+}
