@@ -15,3 +15,30 @@ db.sqlite3-journal
 .venv/
 venv/
 .vscode/
+
+baio/data/*
+baio/evaluation/*
+*.pyc
+# Ignore genome files
+baio/data/persistant_files/genome/
+baio/data/persistant_files/genome/**/*
+
+.DS_Store
+baio_workbench/baio/data/output/aniseed/temp/aniseed_temp.json
+repopack-output.txt
+baio_workbench/baio/data/output/aniseed/*
+baio_workbench/baio/data/output/aniseed/aniseed_out_0.csv
+
+# Specifically ignore large files
+baio/data/persistant_files/genome/Ciona_intestinals_nordea/gff.db
+baio/data/persistant_files/genome/Ciona_intestinals_nordea/primary_assembly_BY_260923_CI_02.fa
+
+# Ignore vectorstore indexes
+# baio/data/persistant_files/vectorstores/**/*.faiss
+# baio/data/persistant_files/vectorstores/**/*.pkl
+
+# Ignore large JSON files
+baio/data/persistant_files/user_manuals/api_documentation/ucsc/genomes.json
+
+# Ignore parquet files
+baio/data/persistant_files/vectorstores/aniseed_datastore/*.parquet

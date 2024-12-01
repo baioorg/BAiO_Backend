@@ -34,7 +34,7 @@ class Message(models.Model):
 class CSVFile(models.Model):
     message = models.ForeignKey(Message, on_delete=models.CASCADE, related_name='csv_files')
     file_name = models.CharField(max_length=255)
-    file_path =  models.FileField(upload_to="TBD")
+    file_path = models.FileField()
     created_at = models.DateTimeField(auto_now_add=True)
 
 
