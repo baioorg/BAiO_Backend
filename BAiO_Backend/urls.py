@@ -38,6 +38,7 @@ urlpatterns = [
     path("chat/deleteConversation/", DeleteConversation.as_view()),
     path("chat/addAPIKey/", AddAPIKeyView.as_view()),
     path("chat/getApiKeys/", GetAPIKeysView.as_view()),
+    path("chat/getCSVFile/<int:file_id>/download", GetCSVFileView.as_view()),
     path("chat/getLLMProviders/", GetLLMProvidersView.as_view(), name="get_llm_providers"),
     path("user/validateToken/", ValidateTokenView.as_view(), name="validateToken"),
     #TODO: Add url for delete api key

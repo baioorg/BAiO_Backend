@@ -1,15 +1,20 @@
 from rest_framework import serializers
-from .models import Conversation, Message, APIKey, LLMProvider, Model
+from .models import Conversation, Message, APIKey, LLMProvider, Model, CSVFile
 
     
 class MessageSerializer(serializers.ModelSerializer):
+    csvfiles = serializers.SerializerMethodField()
+
     class Meta:
         model = Message
-        fields = ['id', 'content', 'role', 'created_at']
+        fields = ['id', 'content', 'role', 'created_at', 'csv_files']
         extra_kwargs = {
             'id': {'read_only': True},
             'created_at': {'read_only': True},
         }
+
+    def get_csvfiles(self, obj):
+        return CSVFileReferenceSerializer(obj.csvfiles, many=True).data
         
 
 class ConversationSerializer(serializers.ModelSerializer):
@@ -26,7 +31,20 @@ class ConversationSerializer(serializers.ModelSerializer):
 
     def get_messages(self, obj):
         messages = obj.messages.filter(role__in=['user', 'baio'])
+
         return MessageSerializer(messages, many=True).data
+
+
+class CSVFileReferenceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CSVFile
+        fields = ['id', 'file_name', 'created_at']
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'created_at': {'read_only': True},
+        }
+
+
 
 class ConversationReferenceSerializer(serializers.ModelSerializer):
     message_count = serializers.SerializerMethodField()

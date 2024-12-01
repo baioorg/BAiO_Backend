@@ -1,10 +1,11 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 from django.core.exceptions import ObjectDoesNotExist
+from django.http import FileResponse
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from .models import Conversation, Message, APIKey
+from .models import Conversation, Message, APIKey, CSVFile
 from .serializers import *
 from .baio_container.openai_container import Message_Container
 from django.http import StreamingHttpResponse
@@ -213,3 +214,18 @@ class GetLLMProvidersView(APIView):
         providers = LLMProvider.objects.all()
         serializer = LLMProviderSerializer(providers, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class GetCSVFileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, file_id):
+        user = request.user
+
+        try:
+            csvfile = CSVFile.objects.get(id=file_id, message__conversation__user=user)
+        except:
+            return Response(f"CSV File with id {file_id} does not exist", status=status.HTTP_404_NOT_FOUND)
+        
+        file_path = csvfile.file_path.path
+        return FileResponse(open(file_path, 'rb'), as_attachment=True, filename=csvfile.file_name)
+        
