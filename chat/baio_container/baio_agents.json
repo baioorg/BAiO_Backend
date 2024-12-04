@@ -14,7 +14,7 @@
                         }
                     },
                     "required": ["query"],
-                    "additionalProperties": 0
+                    "additionalProperties": false
                 }
             }
         },
@@ -32,7 +32,7 @@
                         }
                     },
                     "required": ["query"],
-                    "additionalProperties": 0
+                    "additionalProperties": false
                 }
             }
         },
@@ -55,7 +55,7 @@
                         }
                     },
                     "required": ["query", "file_name"],
-                    "additionalProperties": 0
+                    "additionalProperties": false
                 }
             }
         },
@@ -73,7 +73,7 @@
                         }
                     },
                     "required": ["query"],
-                    "additionalProperties": 0
+                    "additionalProperties": false
                 }
             }
         }   

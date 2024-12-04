@@ -3,7 +3,7 @@ from .models import Conversation, Message, APIKey, LLMProvider, Model, CSVFile
 
     
 class MessageSerializer(serializers.ModelSerializer):
-    csvfiles = serializers.SerializerMethodField()
+    csv_files = serializers.SerializerMethodField()
 
     class Meta:
         model = Message
@@ -13,8 +13,8 @@ class MessageSerializer(serializers.ModelSerializer):
             'created_at': {'read_only': True},
         }
 
-    def get_csvfiles(self, obj):
-        return CSVFileReferenceSerializer(obj.csvfiles, many=True).data
+    def get_csv_files(self, obj):
+        return CSVFileReferenceSerializer(obj.csv_files, many=True).data
         
 
 class ConversationSerializer(serializers.ModelSerializer):

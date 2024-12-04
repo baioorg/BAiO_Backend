@@ -69,16 +69,11 @@ if __name__ == "__main__":
     # Run tests
     #results = test_baio_functionality(api_key)
 
-    result = baio_agent(question = "What genes are expressed between stage 1 and 3 in ciona robusta?",
-                        llm = ChatOpenAI(model="gpt-4o", temperature=0.3, api_key=api_key),
-                        embedding = OpenAIEmbeddings(api_key=api_key))
+    #result = aniseed_agent(question = "What genes are expressed between stage 1 and 3 in ciona robusta?",
+    #                llm = ChatOpenAI(model="gpt-4o", temperature=0, api_key=api_key))
+
+    result = baio_agent(question = "Which organism does this DNA sequence come from: AGGGGCAGCAAACACCGGGACACACCCATTCGTGCACTAATCAGAAACTTTTTTTTCTCAAATAATTC",
+                    llm = ChatOpenAI(model="gpt-4o", temperature=0, api_key=api_key),
+                    embedding = OpenAIEmbeddings(api_key=api_key))
+    print(result)
     
-    # Print summary
-    print("\nTest Summary:")
-    for test_name, result in results.items():
-        print(f"\n{test_name}:")
-        print(f"Status: {result['status']}")
-        if result['status'] == 'Success':
-            print(f"Result: {result['result']}")
-        else:
-            print(f"Error: {result['error']}")

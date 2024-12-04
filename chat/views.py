@@ -7,7 +7,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from .models import Conversation, Message, APIKey, CSVFile
 from .serializers import *
-from .baio_container.openai_container import Message_Container
+from .baio_container.openai_container_with_tools import Message_Container
 from django.http import StreamingHttpResponse
 from queue import Queue
 
@@ -152,7 +152,7 @@ class SendMessageView(APIView):
             return Response(f"There are no conversations with id {conversation_id} connected to this user", status=status.HTTP_404_NOT_FOUND)
         
         try:
-            apikey = APIKey.objects.get(nickname=apikey_nickname, user=user)
+            apikey = APIKey.objects.get(nickname=apikey_nickname, user=user).key
         except APIKey.DoesNotExist:
             return Response(f"There are no apikeys with nickname {apikey_nickname} connected to this user", status=status.HTTP_404_NOT_FOUND)
 
@@ -171,7 +171,9 @@ class SendMessageView(APIView):
         ]
 
         queue = Queue()
-        message_container = Message_Container(messages, queue, apikey, model)
+        print("views before")
+        message_container = Message_Container(messages, queue, apikey, model, conversation_id)
+        print("views after")
         message_container.start()
 
         full_response = []
@@ -179,7 +181,7 @@ class SendMessageView(APIView):
         def response_generator():
             while True:
                 try:
-                    chunk = queue.get(timeout=2.0)
+                    chunk = queue.get(timeout=15.0)
                     if chunk == "DONE":
                         if full_response:
                             Message.objects.create(
@@ -188,7 +190,6 @@ class SendMessageView(APIView):
                                 role='baio'
                             )
                         break
-                    print(f"Chunk: {chunk}")
                     full_response.append(chunk)
                     yield chunk
                 except Exception as e:
