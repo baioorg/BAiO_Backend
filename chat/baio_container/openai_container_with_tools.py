@@ -89,8 +89,9 @@ class Message_Container(threading.Thread):
             #functions_list = [func["function"] for func in self.tools]
 
             #print("Available tools:", self.tools)
-
-            while True:
+            api_calls = 0
+            while api_calls<5:
+                api_calls+=1
                 # Make the API call with streaming
                 response = openai.chat.completions.create(
                     model = self.model,
@@ -102,18 +103,20 @@ class Message_Container(threading.Thread):
 
                 # Initialize variables to collect the assistant's response
                 assistant_response = ""
-                function_name = None
-                function_args = ""
+                called_functions = []
+                function_names = []
+                function_argss = []
 
                 print("Processing response stream...")
                 for chunk in response:
                     delta = chunk.choices[0].delta
                     if delta.tool_calls is not None:
                         # Collect tool_calls data
+                        index = delta.tool_calls[0].index
                         if delta.tool_calls[0].function.name is not None:
-                            function_name = delta.tool_calls[0].function.name
+                            called_functions.append({"name":delta.tool_calls[0].function.name, "args":""})
                         if delta.tool_calls[0].function.arguments is not None:
-                            function_args += delta.tool_calls[0].function.arguments
+                            called_functions[index]["args"] += delta.tool_calls[0].function.arguments
                     elif delta.content is not None:
                         content = delta.content
                         if content:
@@ -121,11 +124,13 @@ class Message_Container(threading.Thread):
                             assistant_response += content
                             
                 print(f"Assistant response: {assistant_response}")
-                print(f"Final function name: {function_name}")
-                print(f"Final function args: {function_args}")
+                print(f"Called functions: {called_functions}")
 
                 # If a function call was made, execute the function
-                if function_name and function_args:
+                for function in called_functions:
+                    function_name = function["name"]
+                    function_args = function["args"]
+
                     try:
                         args = json.loads(function_args)
                         # Add the message_id to args if needed
@@ -148,14 +153,17 @@ class Message_Container(threading.Thread):
                             "content": function_response
                         })
 
-                        continue
                     except Exception as e:
                         print(f"Error executing function: {str(e)}")
-                        self.queue.put(f"\nError executing function: {str(e)}\n")
-                        break
-                else:
-                    # Response has finished
-                    break
+                        self.messages.append({
+                            "role": "function",
+                            "name": function_name,
+                            "content": f"\nError executing function{function_name} with args {str(function_args)}. Received error {str(e)}\n. Please rewrite your query and try again."})
+                    
+                    continue
+                
+                # Response has finished
+                break
 
             self.queue.put("DONE")
 

@@ -48,7 +48,7 @@ class NaturalLanguageExtractors:
         return gene_list
 
 
-def go_nl_query_tool(nl_input: str, llm, embedding) -> pd.DataFrame:
+def go_nl_query_tool(nl_input: str, llm) -> pd.DataFrame:
     """Used when the input is a natural language written query containing gene names
     that need a GO annotation.
     Tool to find gene ontologies (using mygene), outputs data frame with GO & gene id

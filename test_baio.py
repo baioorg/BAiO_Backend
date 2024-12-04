@@ -1,6 +1,6 @@
 from langchain.chat_models import ChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
-from baio.src.agents import baio_agent, aniseed_agent
+from baio.src.agents import baio_agent, aniseed_agent, go_nl_agent
 import os
 
 def test_baio_functionality(openai_api_key: str):
@@ -60,20 +60,10 @@ def test_baio_functionality(openai_api_key: str):
 if __name__ == "__main__":
     import os
     
-    # Get API key from environment variable
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        print("Please set OPENAI_API_KEY environment variable")
-        exit(1)
-    
-    # Run tests
-    #results = test_baio_functionality(api_key)
+    apikey = ""
 
-    #result = aniseed_agent(question = "What genes are expressed between stage 1 and 3 in ciona robusta?",
-    #                llm = ChatOpenAI(model="gpt-4o", temperature=0, api_key=api_key))
+    os.environ['OPENAI_API_KEY'] = apikey
+    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, api_key=apikey)
 
-    result = baio_agent(question = "Which organism does this DNA sequence come from: AGGGGCAGCAAACACCGGGACACACCCATTCGTGCACTAATCAGAAACTTTTTTTTCTCAAATAATTC",
-                    llm = ChatOpenAI(model="gpt-4o", temperature=0, api_key=api_key),
-                    embedding = OpenAIEmbeddings(api_key=api_key))
-    print(result)
+    print("results:\n\n", go_nl_agent("What are the GO terms for BRCA1 and TP53?", llm))
     
