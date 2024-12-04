@@ -85,10 +85,6 @@ class Message_Container(threading.Thread):
 
             self.tools[2]["function"]["parameters"]["properties"]["file_name"]["enum"] = self.get_csv_files_in_conversation(self.conversation_id)
             
-            # Prepare the functions list for the API call
-            #functions_list = [func["function"] for func in self.tools]
-
-            #print("Available tools:", self.tools)
             api_calls = 0
             while api_calls<5:
                 api_calls+=1
@@ -104,8 +100,6 @@ class Message_Container(threading.Thread):
                 # Initialize variables to collect the assistant's response
                 assistant_response = ""
                 called_functions = []
-                function_names = []
-                function_argss = []
 
                 print("Processing response stream...")
                 for chunk in response:
@@ -115,13 +109,21 @@ class Message_Container(threading.Thread):
                         index = delta.tool_calls[0].index
                         if delta.tool_calls[0].function.name is not None:
                             called_functions.append({"name":delta.tool_calls[0].function.name, "args":""})
+                            if(index == 0):
+                                self.queue.put(f"called_functions:[{{name:{delta.tool_calls[0].function.name}, args:")
+                            else:
+                                self.queue.put(f"}},{{name:{delta.tool_calls[0].function.name}, args:")
                         if delta.tool_calls[0].function.arguments is not None:
                             called_functions[index]["args"] += delta.tool_calls[0].function.arguments
+                            self.queue.put(delta.tool_calls[0].function.arguments)
                     elif delta.content is not None:
                         content = delta.content
                         if content:
                             self.queue.put(content)
                             assistant_response += content
+                
+                if(len(called_functions) > 0):
+                    self.queue.put("}]")
                             
                 print(f"Assistant response: {assistant_response}")
                 print(f"Called functions: {called_functions}")
@@ -160,10 +162,10 @@ class Message_Container(threading.Thread):
                             "name": function_name,
                             "content": f"\nError executing function{function_name} with args {str(function_args)}. Received error {str(e)}\n. Please rewrite your query and try again."})
                     
-                    continue
                 
                 # Response has finished
-                break
+                if(len(called_functions) == 0):
+                    break
 
             self.queue.put("DONE")
 
