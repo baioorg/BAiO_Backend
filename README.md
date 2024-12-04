@@ -453,6 +453,10 @@ Authorization: Bearer %ACCESS_TOKEN%
 
 **Response:**
 The response is streamed as plain text chunks. After completion, the response is saved as a message in the conversation.
+The calls the model makes to it's functions come out in the api response like this, and should be parsed somehow on the frontend so that its not just a normal part of the message:
+"called_functions:[{name:function1, args:%function_args%}, [{name:function2, args:%function_args%}, ...]"
+"function_responses:[{name:function1, response:%function_response%}, [{name:function2, response:%function_response%}, ...]"
+
 
 **Note:** Due to streaming response, this endpoint cannot be tested via standard REST clients. Use curl or implement streaming in your frontend:
 

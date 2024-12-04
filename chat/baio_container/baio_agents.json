@@ -48,13 +48,18 @@
                             "type": "string",
                             "description": "A natural language query specifying the desired analysis, including complex operations on the CSV file."
                         },
-                        "file_name": {
-                            "type": "string",
-                            "description": "Name of the csv file you want to analyze",
-                            "enum": []
+                        "file_names": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": []
+
+                            },
+                            "description": "Names of the csv files you want to analyze. Can include multiple files."
+                            
                         }
                     },
-                    "required": ["query", "file_name"],
+                    "required": ["query", "file_names"],
                     "additionalProperties": false
                 }
             }

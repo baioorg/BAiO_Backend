@@ -171,9 +171,7 @@ class SendMessageView(APIView):
         ]
 
         queue = Queue()
-        print("views before")
         message_container = Message_Container(messages, queue, apikey, model, conversation_id)
-        print("views after")
         message_container.start()
 
         full_response = []
