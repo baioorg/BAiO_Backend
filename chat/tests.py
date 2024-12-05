@@ -1,7 +1,7 @@
 from django.test import TestCase
 from rest_framework.test import APIClient
 from rest_framework import status
-from .models import Conversation, Message, APIKey
+from .models import Conversation, Message, APIKey, Model, LLMProvider
 from rest_framework_simplejwt.tokens import RefreshToken
 from userAuth.models import User
 
@@ -41,6 +41,17 @@ class ChatTests(TestCase):
             "field_of_study": "AI researcher"
         }
 
+        llmprovider = LLMProvider.objects.create(
+            id=1,
+            name="test_provider"
+        )
+
+        Model.objects.create(
+                    id=1,
+                    name="test_model",
+                    provider=llmprovider
+                )
+
         resp1 = self.client.post(self.register_url, self.user_data1, format='json')
         resp2 = self.client.post(self.register_url, self.user_data2, format='json')
 
@@ -75,7 +86,7 @@ class ChatTests(TestCase):
 
         response = self.client.post(self.rename_conversation_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["title"], "Test")
+        self.assertEqual(response.data[-4:], "Test")
 
     def test_rename_non_existing_conversation(self):
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.auth_token)
@@ -128,10 +139,12 @@ class ChatTests(TestCase):
     # Test only works since we're not currently checking if apikeys are valid upon adding them.
     def test_add_apikey_success(self):
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.auth_token)
+        
 
         data = {
-            "key": "1234",
-            "nickname": "Test key"
+            "apiKey": "1234",
+            "name": "Test key",
+            "apiProvider_id": 1
         }
 
         response = self.client.post(self.add_apikey_url, data, format='json')

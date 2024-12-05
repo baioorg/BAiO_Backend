@@ -1,3 +1,5 @@
+# Deprecated, use openai_container_with_tools instead
+
 import openai
 import threading
 from django.conf import settings

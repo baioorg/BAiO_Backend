@@ -1,0 +1,86 @@
+{
+    "tools": [
+        {
+            "type": "function",
+            "function": {
+                "name": "aniseed_agent",
+                "description": "Handles queries related to the ANISEED (Ascidian Network for In Situ Expression and Embryological Data) database. Designed to process complex natural language queries about ascidian gene expression, developmental stages, and anatomical structures in one request.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string",
+                            "description": "A detailed natural language query about ascidian gene expression, developmental stages, anatomical structures, or any combination thereof. The query can include multiple aspects."
+                        }
+                    },
+                    "required": ["query"],
+                    "additionalProperties": false
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "baio_agent",
+                "description": "The main agent coordinating queries to various bioinformatics tools and databases like NCBI BLAST, E-utilities, and the UCSC genome browser. Capable of handling complex multi-step queries related to DNA/protein sequences and genomic data.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string",
+                            "description": "A comprehensive natural language query describing the desired search, DNA/protein sequences, and any relevant contextual information for bioinformatics tasks."
+                        }
+                    },
+                    "required": ["query"],
+                    "additionalProperties": false
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "csv_chatter_agent",
+                "description": "Analyzes and interacts with CSV files using complex natural language queries. Supports multi-faceted requests such as aggregations, data filtering, and comparisons across files.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string",
+                            "description": "A natural language query specifying the desired analysis, including complex operations on the CSV file."
+                        },
+                        "file_names": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": []
+
+                            },
+                            "description": "Names of the csv files you want to analyze. Can include multiple files."
+                            
+                        }
+                    },
+                    "required": ["query", "file_names"],
+                    "additionalProperties": false
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "go_nl_agent",
+                "description": "Used for natural language queries containing one or more gene names to retrieve GO annotations. Accepts complex queries involving multiple genes and outputs a data frame with GO terms and gene IDs. Finds gene ontologies.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string",
+                            "description": "A natural language string containing one or more gene names to be processed."
+                        }
+                    },
+                    "required": ["query"],
+                    "additionalProperties": false
+                }
+            }
+        }   
+    ]
+}

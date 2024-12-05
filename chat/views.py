@@ -1,12 +1,13 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 from django.core.exceptions import ObjectDoesNotExist
+from django.http import FileResponse
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from .models import Conversation, Message, APIKey
+from .models import Conversation, Message, APIKey, CSVFile
 from .serializers import *
-from .baio_container.openai_container import Message_Container
+from .baio_container.openai_container_with_tools import Message_Container
 from django.http import StreamingHttpResponse
 from queue import Queue
 
@@ -33,6 +34,10 @@ class GetConversationView(APIView):
     def get(self, request):
         try:
             user = request.user
+            input_serializer = GetConversationSerializer(data=request.query_params)
+            if not input_serializer.is_valid():
+                return Response("Invalid request data", status=status.HTTP_400_BAD_REQUEST)
+            
             conversation_id = request.query_params.get('conversation_id')
             
             conversation = Conversation.objects.get(id=conversation_id, user=user)
@@ -113,18 +118,23 @@ class AddAPIKeyView(APIView):
 
     def post(self, request):
         user = request.user
-        apikey_nickname = request.data['name']
-        apiProvider_id = request.data['apiProvider']
-        key = request.data['apiKey']
+
+        serializer = AddAPIKeyViewSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(f"Invalid request data", status=status.HTTP_400_BAD_REQUEST)
+        
+        name = request.data['name']
+        apiProvider_id = request.data['apiProvider_id']
+        apiKey = request.data['apiKey']
         
         try:
             # Retrieve the LLMProvider instance
             apiProvider = LLMProvider.objects.get(id=apiProvider_id)
             # Create the API key instance
-            apiKeys = APIKey.objects.create(user=user, nickname=apikey_nickname, apiProvider=apiProvider, key=key)
+            apiKeys = APIKey.objects.create(user=user, nickname=name, apiProvider=apiProvider, key=apiKey)
             
             serializer = APIKeySerializer(apiKeys)
-            return Response(f"APIKey successfully saved as {serializer.data['nickname']}", status=status.HTTP_200_OK)
+            return Response(f"APIKey successfully saved as {serializer.data['nickname']}", status=status.HTTP_201_CREATED)
         
         except LLMProvider.DoesNotExist:
             return Response(f"LLMProvider with id={apiProvider_id} does not exist", status=status.HTTP_404_NOT_FOUND)
@@ -132,7 +142,25 @@ class AddAPIKeyView(APIView):
             return Response(f"Failed to save APIKey: {str(e)}", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         
+class DeleteAPIKeyView(APIView):
+    permission_clauses = [IsAuthenticated]
+    def post(self, request):
+        user = request.user
+
+        serializer = DeleteAPIKeySerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
+        apikey_id = request.data['apikey_id']
+        try:
+            # Changed conversation_id to id in the query
+            apikey = APIKey.objects.get(apikey_id=apikey_id, message__conversation__user=user)
+        except APIKey.DoesNotExist:
+            return Response(f"No API keys with id={apikey_id} belonging to this user was found", status=status.HTTP_404_NOT_FOUND)
+        
+        apikey.delete()
+
+        return Response(f"API key with id={apikey_id}, nickname={apikey.nickname} successfully deleted", status=status.HTTP_200_OK)
         
         
 class SendMessageView(APIView):
@@ -141,8 +169,13 @@ class SendMessageView(APIView):
 
     def post(self, request):
         user = request.user
+
+        serializer = SendMessageViewSerializer(request.data)
+        if not serializer.is_valid():
+            return Response("Invalid request data", status=status.HTTP_400_BAD_REQUEST)
+        
         conversation_id = request.data['conversation_id']
-        apikey_nickname = request.data['apikey_nickname']
+        apikey_id = request.data['apikey_id']
         model = request.data['model']
 
         try:
@@ -151,9 +184,9 @@ class SendMessageView(APIView):
             return Response(f"There are no conversations with id {conversation_id} connected to this user", status=status.HTTP_404_NOT_FOUND)
         
         try:
-            apikey = APIKey.objects.get(nickname=apikey_nickname, user=user)
+            apikey = APIKey.objects.get(id=apikey_id, user=user).key
         except APIKey.DoesNotExist:
-            return Response(f"There are no apikeys with nickname {apikey_nickname} connected to this user", status=status.HTTP_404_NOT_FOUND)
+            return Response(f"There are no apikeys with id {apikey_id} connected to this user", status=status.HTTP_404_NOT_FOUND)
 
         Message.objects.create(
             conversation=conversation,
@@ -170,7 +203,7 @@ class SendMessageView(APIView):
         ]
 
         queue = Queue()
-        message_container = Message_Container(messages, queue, apikey, model)
+        message_container = Message_Container(messages, queue, apikey, model, conversation_id)
         message_container.start()
 
         full_response = []
@@ -178,7 +211,7 @@ class SendMessageView(APIView):
         def response_generator():
             while True:
                 try:
-                    chunk = queue.get(timeout=2.0)
+                    chunk = queue.get(timeout=15.0)
                     if chunk == "DONE":
                         if full_response:
                             Message.objects.create(
@@ -187,7 +220,6 @@ class SendMessageView(APIView):
                                 role='baio'
                             )
                         break
-                    print(f"Chunk: {chunk}")
                     full_response.append(chunk)
                     yield chunk
                 except Exception as e:
@@ -213,3 +245,24 @@ class GetLLMProvidersView(APIView):
         providers = LLMProvider.objects.all()
         serializer = LLMProviderSerializer(providers, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class GetCSVFileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        serializers = GetCSVFileViewSerializer(request.query_params)
+        if not serializers.is_valid():
+            return Response("Invalid request data", status=status.HTTP_400_BAD_REQUEST)
+        
+        file_id = request.query_params.get("file_id")
+
+        try:
+            csvfile = CSVFile.objects.get(id=file_id, message__conversation__user=user)
+        except:
+            return Response(f"CSV File with id {file_id} does not exist", status=status.HTTP_404_NOT_FOUND)
+        
+        file_path = csvfile.file_path.path
+        return FileResponse(open(file_path, 'rb'), as_attachment=True, filename=csvfile.file_name)
+        
