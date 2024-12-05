@@ -102,3 +102,22 @@ class RenameConversationSerializer(serializers.Serializer):
 
 class DeleteConversationSerializer(serializers.Serializer):
     conversation_id = serializers.IntegerField(required=True)
+
+class DeleteAPIKeySerializer(serializers.Serializer):
+    apikey_id = serializers.IntegerField(required=True)
+
+class AddAPIKeyViewSerializer(serializers.Serializer):
+    name = serializers.CharField(required=True, max_length=255)
+    apiProvider_id = serializers.IntegerField(required=True)
+    apiKey = serializers.CharField(required=True, max_length=255)
+
+class GetConversationSerializer(serializers.Serializer):
+    conversation_id = serializers.IntegerField(required=True)
+
+class SendMessageViewSerializer(serializers.Serializer):
+    conversation_id = serializers.IntegerField(required=True)
+    apikey_id = serializers.CharField(required=True, max_length=255)
+    model = serializers.CharField(required=True, max_length=255)
+
+class GetCSVFileViewSerializer(serializers.Serializer):
+    file_id = serializers.IntegerField(required=True)
