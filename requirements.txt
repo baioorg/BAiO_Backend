@@ -21,3 +21,11 @@ chromadb==0.3.29
 faiss-cpu==1.7.4
 xmltodict
 mygene==3.2.2
+tokenizers==0.14.1
+tiktoken==0.5.1
+rdflib==7.0.0
+lxml==4.9.3
+unstructured==0.10.28
+layoutparser==0.3.4
+xmltodict
+gffutils
