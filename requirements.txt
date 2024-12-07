@@ -4,6 +4,7 @@ djangorestframework-simplejwt>=4.8.0
 openai==1.55.3
 gunicorn==23.0.0
 django-cors-headers>=4.5.0
+gevent==24.11.1
 numpy-groupies==0.10.2
 pandas==2.1.1
 scipy==1.11.3
