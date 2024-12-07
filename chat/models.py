@@ -31,6 +31,12 @@ class Message(models.Model):
     role = models.CharField(max_length=50, choices=[('user', 'User'), ('baio', 'BAiO'), ('system', 'System')])
     created_at = models.DateTimeField(auto_now_add=True)
 
+class CSVFile(models.Model):
+    message = models.ForeignKey(Message, on_delete=models.CASCADE, related_name='csv_files')
+    file_name = models.CharField(max_length=255)
+    file_path = models.FileField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
 
 class APIKey(models.Model):
     key = models.CharField(max_length=255)

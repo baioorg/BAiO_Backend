@@ -175,6 +175,24 @@ Authorization: Bearer %ACCESS_TOKEN%
 }
 ```
 
+### 6. Validate Token
+**URL:** `/user/validateToken/`  
+**Method:** `GET`  
+**Authentication:** Requires Bearer Token  
+**Description:** Validates if the current access token is still valid.  
+
+**Request Headers:**
+```
+Authorization: Bearer %ACCESS_TOKEN%
+```
+
+**Response Example:**
+```json
+{
+  "valid": true
+}
+```
+
 ## Chat Endpoints
 
 ### 1. Get a Conversation
@@ -200,21 +218,34 @@ conversation_id: The ID of the conversation to retrieve
   "title": "Research Discussion",
   "messages": [
     {
+      "id": 1,
       "role": "system",
       "content": "You are BAiO, a chat bot who is an expert on biology and genomic data.",
-      "created_at": "2024-01-15T10:00:00Z"
+      "created_at": "2024-01-15T10:00:00Z",
+      "csv_files": []
     },
     {
+      "id": 2,
       "role": "user",
       "content": "What are the key aspects of AI in genomics?",
-      "created_at": "2024-01-15T10:01:00Z"
+      "created_at": "2024-01-15T10:01:00Z",
+      "csv_files": []
     },
     {
+      "id": 3,
       "role": "baio",
       "content": "Key aspects include predictive analysis, data integration, etc.",
-      "created_at": "2024-01-15T10:02:00Z"
+      "created_at": "2024-01-15T10:02:00Z",
+      "csv_files": [
+        {
+          "id": 1,
+          "file_name": "analysis_results.csv",
+          "created_at": "2024-01-15T10:02:00Z"
+        }
+      ]
     }
-  ]
+  ],
+  "created_at": "2024-01-15T10:00:00Z"
 }
 ```
 
@@ -235,11 +266,13 @@ Authorization: Bearer %ACCESS_TOKEN%
   {
     "id": 1,
     "title": "Research Discussion",
+    "message_count": 3,
     "created_at": "2024-01-15T10:00:00Z"
   },
   {
     "id": 2,
     "title": "Project Meeting",
+    "message_count": 5,
     "created_at": "2024-01-14T11:30:00Z"
   }
 ]
@@ -294,11 +327,14 @@ Authorization: Bearer %ACCESS_TOKEN%
   "title": "New Research Topic",
   "messages": [
     {
+      "id": 1,
       "role": "system",
       "content": "You are BAiO, a chat bot who is an expert on biology and genomic data.",
-      "created_at": "2024-01-15T09:00:00Z"
+      "created_at": "2024-01-15T09:00:00Z",
+      "csv_files": []
     }
-  ]
+  ],
+  "created_at": "2024-01-15T09:00:00Z"
 }
 ```
 
@@ -329,7 +365,7 @@ Authorization: Bearer %ACCESS_TOKEN%
 **URL:** `/chat/addAPIKey/`  
 **Method:** `POST`  
 **Authentication:** Requires Bearer Token  
-**Description:** Adds an OpenAI API key for the user.
+**Description:** Adds an API key for a specific LLM provider.
 
 **Request Headers:**
 ```
@@ -339,17 +375,15 @@ Authorization: Bearer %ACCESS_TOKEN%
 **Request Body:**
 ```json
 {
-  "key": "sk-...",
-  "nickname": "OpenAI Key"
+  "name": "My API Key",
+  "apiProvider_id": 1,
+  "apiKey": "sk-..."
 }
 ```
 
 **Response Example:**
 ```json
-{
-  "nickname": "OpenAI Key",
-  "user": 1
-}
+"APIKey successfully saved as My API Key"
 ```
 
 ### 7. Get API Keys
@@ -367,15 +401,13 @@ Authorization: Bearer %ACCESS_TOKEN%
 ```json
 [
   {
-    "nickname": "OpenAI Key",
+    "nickname": "My API Key",
     "provider": {
       "id": 1,
       "name": "OpenAI",
       "models": [
         { "id": 1, "name": "GPT-4o" },
-        { "id": 2, "name": "GPT-4o mini" },
-        { "id": 3, "name": "OpenAI o1-preview" },
-        { "id": 4, "name": "OpenAI o1-mini" }
+        { "id": 2, "name": "GPT-4o mini" }
       ]
     },
     "created_at": "2024-10-27T14:23:35.321Z"
@@ -445,7 +477,7 @@ Authorization: Bearer %ACCESS_TOKEN%
 ```json
 {
   "conversation_id": 1,
-  "apikey_nickname": "OpenAI Key",
+  "apikey_id": 1,
   "content": "What are the applications of AI in genomics?",
   "model": "gpt-4o-mini"
 }
@@ -453,6 +485,9 @@ Authorization: Bearer %ACCESS_TOKEN%
 
 **Response:**
 The response is streamed as plain text chunks. After completion, the response is saved as a message in the conversation.
+The calls the model makes to its functions come out in the api response like this, and should be parsed on the frontend:
+"called_functions:[{name:function1, args:%function_args%}, [{name:function2, args:%function_args%}, ...]"
+"function_responses:[{name:function1, response:%function_response%}, [{name:function2, response:%function_response%}, ...]"
 
 **Note:** Due to streaming response, this endpoint cannot be tested via standard REST clients. Use curl or implement streaming in your frontend:
 
@@ -460,4 +495,19 @@ The response is streamed as plain text chunks. After completion, the response is
 curl -X POST http://localhost:8000/chat/sendMessage/ \
      -H "Content-Type: application/json" \
      -H "Authorization: Bearer %ACCESS_TOKEN%" \
-     -d '{"conversation_id": %CONVERSATION_ID%, "apikey_nickname": "%APIKEY_NICKNAME%", "content": "%TEXT_PROMPT%", "model": "gpt-4o-mini"}'
+     -d '{"conversation_id": %CONVERSATION_ID%, "apikey_id": "%APIKEY_ID%", "content": "%TEXT_PROMPT%", "model": "gpt-4o-mini"}'
+```
+
+### 10. Get CSV File
+**URL:** `/chat/getCSVFile/<int:file_id>/download`  
+**Method:** `GET`  
+**Authentication:** Requires Bearer Token  
+**Description:** Downloads a CSV file that was generated during a conversation.
+
+**Request Headers:**
+```
+Authorization: Bearer %ACCESS_TOKEN%
+```
+
+**Response:**
+Returns the CSV file as an attachment for download.
