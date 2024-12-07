@@ -170,7 +170,7 @@ class SendMessageView(APIView):
     def post(self, request):
         user = request.user
 
-        serializer = SendMessageViewSerializer(request.data)
+        serializer = SendMessageViewSerializer(data=request.data)
         if not serializer.is_valid():
             return Response("Invalid request data", status=status.HTTP_400_BAD_REQUEST)
         
