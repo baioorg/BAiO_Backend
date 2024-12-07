@@ -117,6 +117,7 @@ import openai
 from datetime import timedelta
 from django.utils.timezone import now
 
+
 class AddAPIKeyView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -134,7 +135,7 @@ class AddAPIKeyView(APIView):
         try:
             # Retrieve the LLMProvider instance
             if(apiProvider_id == 0):
-                url = request.data.get(url)
+                url = request.data.get("url")
                 if not url:
                     return Response("When using a custom apiProvider, you need to specify a URL", status=status.HTTP_400_BAD_REQUEST)
                 apiProvider, created = LLMProvider.objects.get_or_create(name="Custom", url=url)
@@ -147,23 +148,21 @@ class AddAPIKeyView(APIView):
                     try:
                         models = openai.models.list()
                         for model in models.data:
-                            Model.objects.get_or_create(name=model['id'], apiProvider=apiProvider)
+                            Model.objects.get_or_create(name=model.id, provider=apiProvider)
 
                         # Update the `last_updated` field
                         apiProvider.last_updated = now()
                         apiProvider.save()
                     except Exception as e:
-                        return Response(f"Failed to query models, url may be invalid: {str(e)}", status=status.HTTP_400_BAD_REQUEST)
+                        return Response(f"Failed to query models, url may be invalid or not openai compatible: {str(e)}", status=status.HTTP_400_BAD_REQUEST)
 
-                for model in models.data:
-                    Model.objects.create(name=model.id, apiProvider=apiProvider)
                 
             else:
                 url = apiProvider.url
                 apiProvider = LLMProvider.objects.get(id=apiProvider_id)
 
             # Create the API key instance
-            apiKeys = APIKey.objects.create(user=user, nickname=name, apiProvider=apiProvider, url=url, key=apiKey)
+            apiKeys = APIKey.objects.create(user=user, nickname=name, apiProvider=apiProvider, key=apiKey)
             
             serializer = APIKeySerializer(apiKeys)
             return Response(f"APIKey successfully saved as {serializer.data['nickname']}", status=status.HTTP_201_CREATED)
@@ -220,7 +219,7 @@ class SendMessageView(APIView):
         except APIKey.DoesNotExist:
             return Response(f"There are no apikeys with id {apikey_id} connected to this user", status=status.HTTP_404_NOT_FOUND)
 
-        url = apikey_object.url
+        url = apikey_object.apiProvider.url
         apikey = apikey_object.key
 
         Message.objects.create(

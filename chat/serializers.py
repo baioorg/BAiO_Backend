@@ -111,7 +111,7 @@ class AddAPIKeyViewSerializer(serializers.Serializer):
     name = serializers.CharField(required=True, max_length=255)
     apiProvider_id = serializers.IntegerField(required=True)
     apiKey = serializers.CharField(required=True, max_length=255)
-    url = serializers.URLField(required=False, max_length=255)
+    url = serializers.CharField(required=False, max_length=255)
 
 class GetConversationSerializer(serializers.Serializer):
     conversation_id = serializers.IntegerField(required=True)

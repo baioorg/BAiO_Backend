@@ -41,17 +41,6 @@ class ChatTests(TestCase):
             "field_of_study": "AI researcher"
         }
 
-        llmprovider = LLMProvider.objects.create(
-            id=1,
-            name="test_provider"
-        )
-
-        Model.objects.create(
-                    id=1,
-                    name="test_model",
-                    provider=llmprovider
-                )
-
         resp1 = self.client.post(self.register_url, self.user_data1, format='json')
         resp2 = self.client.post(self.register_url, self.user_data2, format='json')
 
@@ -136,19 +125,23 @@ class ChatTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 
-    # Test only works since we're not currently checking if apikeys are valid upon adding them.
+    # Testing is done using https://mockgpt.wiremock.io/, which is a mock of the openai api used for testing.
+
     def test_add_apikey_success(self):
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.auth_token)
         
 
         data = {
-            "apiKey": "1234",
+            "apiKey": "sk-tq8y7jjj5wkpvyn26mhstlui73anfxeg",
             "name": "Test key",
-            "apiProvider_id": 1
+            "apiProvider_id": 0,
+            "url": "https://mockgpt.wiremockapi.cloud/v1/"
         }
 
         response = self.client.post(self.add_apikey_url, data, format='json')
+        print(f"Test data: {response.data}")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIsNotNone(LLMProvider.objects.get(url="https://mockgpt.wiremockapi.cloud/v1/"))
 
 
 
