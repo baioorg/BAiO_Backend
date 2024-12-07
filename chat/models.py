@@ -3,6 +3,7 @@ from django.utils import timezone
 
 class LLMProvider(models.Model):
     name = models.CharField(max_length=255)
+    url = models.URLField(max_length=255)
 
     def __str__(self):
         return self.name
@@ -42,6 +43,7 @@ class APIKey(models.Model):
     key = models.CharField(max_length=255)
     nickname = models.CharField(max_length=255)
     apiProvider = models.ForeignKey(LLMProvider, on_delete=models.CASCADE, related_name='apikeys')
+    url = models.URLField(max_length=255)
     user = models.ForeignKey('userAuth.User', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 

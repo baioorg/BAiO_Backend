@@ -27,7 +27,7 @@ class Message_Container(threading.Thread):
     Manages OpenAI chat completions with function calling capabilities.
     Runs as a separate thread to handle async streaming responses.
     """
-    def __init__(self, messages, queue, apikey, model, conversation_id):
+    def __init__(self, messages, queue, apikey, model, conversation_id, url):
         threading.Thread.__init__(self)
         self.messages = messages
         self.queue = queue
@@ -35,6 +35,7 @@ class Message_Container(threading.Thread):
         self.model = model
         self.tools = functions_config["tools"]
         self.conversation_id = conversation_id
+        self.url = url
         # Possible security risk?
         os.environ['OPENAI_API_KEY'] = apikey
         self.llm = ChatOpenAI(model=self.model, temperature=0, api_key=apikey)
@@ -104,6 +105,7 @@ class Message_Container(threading.Thread):
         """
         try:
             openai.api_key = self.apikey
+            openai.base_url = self.url
 
             # Update available CSV files for the current conversation
 

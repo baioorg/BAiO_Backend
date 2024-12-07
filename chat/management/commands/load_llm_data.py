@@ -13,7 +13,7 @@ class Command(BaseCommand):
 
         # Parse and save data to the database
         for provider_data in data["LLM-providers"]:
-            provider, _ = LLMProvider.objects.get_or_create(id=provider_data["id"], name=provider_data["name"])
+            provider, _ = LLMProvider.objects.get_or_create(id=provider_data["id"], url=provider_data["url"], name=provider_data["name"])
 
             for model_data in provider_data["models"]:
                 Model.objects.get_or_create(

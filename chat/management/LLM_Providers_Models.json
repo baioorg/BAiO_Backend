@@ -3,6 +3,7 @@
         {
             "id": 1,
             "name": "OpenAI",
+            "url": "https://api.openai.com/v1/",
             "models": [
                 {
                     "id": 1,

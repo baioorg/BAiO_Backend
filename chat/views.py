@@ -123,15 +123,24 @@ class AddAPIKeyView(APIView):
         if not serializer.is_valid():
             return Response(f"Invalid request data", status=status.HTTP_400_BAD_REQUEST)
         
-        name = request.data['name']
+        name = request.data['name']  
         apiProvider_id = request.data['apiProvider_id']
         apiKey = request.data['apiKey']
         
         try:
             # Retrieve the LLMProvider instance
-            apiProvider = LLMProvider.objects.get(id=apiProvider_id)
+            if(apiProvider_id == "custom"):
+                try:
+                    url = request.data[url]
+                except:
+                    return Response(f"When using a custom apiProvider you need to specify an URL", status=status.HTTP_400_BAD_REQUEST)
+
+                apiProvider = "custom"
+            else:
+                apiProvider = LLMProvider.objects.get(id=apiProvider_id)
+                url = apiProvider.url
             # Create the API key instance
-            apiKeys = APIKey.objects.create(user=user, nickname=name, apiProvider=apiProvider, key=apiKey)
+            apiKeys = APIKey.objects.create(user=user, nickname=name, apiProvider=apiProvider, url=url, key=apiKey)
             
             serializer = APIKeySerializer(apiKeys)
             return Response(f"APIKey successfully saved as {serializer.data['nickname']}", status=status.HTTP_201_CREATED)
@@ -184,9 +193,12 @@ class SendMessageView(APIView):
             return Response(f"There are no conversations with id {conversation_id} connected to this user", status=status.HTTP_404_NOT_FOUND)
         
         try:
-            apikey = APIKey.objects.get(id=apikey_id, user=user).key
+            apikey_object = APIKey.objects.get(id=apikey_id, user=user)
         except APIKey.DoesNotExist:
             return Response(f"There are no apikeys with id {apikey_id} connected to this user", status=status.HTTP_404_NOT_FOUND)
+
+        url = apikey_object.url
+        apikey = apikey_object.key
 
         Message.objects.create(
             conversation=conversation,
@@ -203,7 +215,13 @@ class SendMessageView(APIView):
         ]
 
         queue = Queue()
-        message_container = Message_Container(messages, queue, apikey, model, conversation_id)
+        message_container = Message_Container(messages=messages, 
+                                              queue=queue, 
+                                              apikey=apikey, 
+                                              model=model, 
+                                              conversation_id=conversation_id, 
+                                              url=url
+                                              )
         message_container.start()
 
         full_response = []
