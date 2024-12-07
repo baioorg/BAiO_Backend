@@ -70,7 +70,8 @@ class LLMProviderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = LLMProvider
-        fields = ['id', 'name', 'models']
+        fields = ['id', 'name', 'url', 'models']
+
 
 
 

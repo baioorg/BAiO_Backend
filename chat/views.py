@@ -113,6 +113,10 @@ class RenameConversationView(APIView):
 
         return Response(f"Conversation successfully renamed to {new_title}", status=status.HTTP_200_OK)
     
+import openai
+from datetime import timedelta
+from django.utils.timezone import now
+
 class AddAPIKeyView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -129,16 +133,35 @@ class AddAPIKeyView(APIView):
         
         try:
             # Retrieve the LLMProvider instance
-            if(apiProvider_id == "custom"):
-                try:
-                    url = request.data[url]
-                except:
-                    return Response(f"When using a custom apiProvider you need to specify an URL", status=status.HTTP_400_BAD_REQUEST)
+            if(apiProvider_id == 0):
+                url = request.data.get(url)
+                if not url:
+                    return Response("When using a custom apiProvider, you need to specify a URL", status=status.HTTP_400_BAD_REQUEST)
+                apiProvider, created = LLMProvider.objects.get_or_create(name="Custom", url=url)
 
-                apiProvider = "custom"
+                if created or now() - apiProvider.last_updated > timedelta(weeks=1):
+                    # Fetch models only if the provider is newly created or if its one week since it was last updated
+                    openai.api_key = apiKey
+                    openai.base_url = url
+
+                    try:
+                        models = openai.models.list()
+                        for model in models.data:
+                            Model.objects.get_or_create(name=model['id'], apiProvider=apiProvider)
+
+                        # Update the `last_updated` field
+                        apiProvider.last_updated = now()
+                        apiProvider.save()
+                    except Exception as e:
+                        return Response(f"Failed to query models, url may be invalid: {str(e)}", status=status.HTTP_400_BAD_REQUEST)
+
+                for model in models.data:
+                    Model.objects.create(name=model.id, apiProvider=apiProvider)
+                
             else:
-                apiProvider = LLMProvider.objects.get(id=apiProvider_id)
                 url = apiProvider.url
+                apiProvider = LLMProvider.objects.get(id=apiProvider_id)
+
             # Create the API key instance
             apiKeys = APIKey.objects.create(user=user, nickname=name, apiProvider=apiProvider, url=url, key=apiKey)
             

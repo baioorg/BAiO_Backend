@@ -12,6 +12,7 @@ class LLMProvider(models.Model):
 class Model(models.Model):
     name = models.CharField(max_length=255)
     provider = models.ForeignKey(LLMProvider, related_name="models", on_delete=models.CASCADE)
+    last_updated = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.name} ({self.provider.name})"

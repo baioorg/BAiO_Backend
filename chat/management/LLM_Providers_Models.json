@@ -1,6 +1,12 @@
 {
     "LLM-providers": [
         {
+            "id": 0,
+            "name": "custom",
+            "url": "custom",
+            "models": []
+        },
+        {
             "id": 1,
             "name": "OpenAI",
             "url": "https://api.openai.com/v1/",
