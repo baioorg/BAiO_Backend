@@ -267,14 +267,8 @@ class GetLLMProvidersView(APIView):
 class GetCSVFileView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
+    def get(self, request, file_id):
         user = request.user
-
-        serializers = GetCSVFileViewSerializer(request.query_params)
-        if not serializers.is_valid():
-            return Response("Invalid request data", status=status.HTTP_400_BAD_REQUEST)
-        
-        file_id = request.query_params.get("file_id")
 
         try:
             csvfile = CSVFile.objects.get(id=file_id, message__conversation__user=user)
