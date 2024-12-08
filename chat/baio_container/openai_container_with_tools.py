@@ -38,8 +38,8 @@ class Message_Container(threading.Thread):
         self.url = url
         # Possible security risk?
         os.environ['OPENAI_API_KEY'] = apikey
-        self.llm = ChatOpenAI(model=self.model, temperature=0, api_key=apikey)
-        self.embedding = OpenAIEmbeddings(api_key=apikey)
+        self.llm = ChatOpenAI(model=self.model, temperature=0, api_key=apikey, base_url=url)
+        self.embedding = OpenAIEmbeddings(api_key=apikey, base_url=url)
     
     def aniseed_function(self, query, message_id):
         """Processes ANISEED database queries and creates CSV files with results"""

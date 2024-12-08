@@ -365,7 +365,7 @@ Authorization: Bearer %ACCESS_TOKEN%
 **URL:** `/chat/addAPIKey/`  
 **Method:** `POST`  
 **Authentication:** Requires Bearer Token  
-**Description:** Adds an API key for a specific LLM provider.
+**Description:** Adds an API key for a specific LLM provider. Use apiProvider_id:0 and add a field for "url" to use a custom OpenAI compatible API
 
 **Request Headers:**
 ```
