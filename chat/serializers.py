@@ -72,6 +72,8 @@ class LLMProviderSerializer(serializers.ModelSerializer):
         model = LLMProvider
         fields = ['id', 'name', 'url', 'models']
 
+    
+
 
 
 
@@ -80,7 +82,7 @@ class APIKeySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = APIKey
-        fields = ['key', 'nickname', 'provider', 'created_at']
+        fields = ['id', 'key', 'nickname', 'provider', 'created_at']
         extra_kwargs = {
             'key': {'write_only': True},
             'created_at': {'read_only': True}

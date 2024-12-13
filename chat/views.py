@@ -138,7 +138,7 @@ class AddAPIKeyView(APIView):
                 url = request.data.get("url")
                 if not url:
                     return Response("When using a custom apiProvider, you need to specify a URL", status=status.HTTP_400_BAD_REQUEST)
-                apiProvider, created = LLMProvider.objects.get_or_create(name="Custom", url=url)
+                apiProvider, created = LLMProvider.objects.get_or_create(name="Custom", url=url, hidden=True)
 
                 if created or now() - apiProvider.last_updated > timedelta(weeks=1):
                     # Fetch models only if the provider is newly created or if its one week since it was last updated
@@ -158,8 +158,8 @@ class AddAPIKeyView(APIView):
 
                 
             else:
-                url = apiProvider.url
                 apiProvider = LLMProvider.objects.get(id=apiProvider_id)
+                url = apiProvider.url
 
             # Create the API key instance
             apiKeys = APIKey.objects.create(user=user, nickname=name, apiProvider=apiProvider, key=apiKey)
@@ -282,7 +282,7 @@ class GetLLMProvidersView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        providers = LLMProvider.objects.all()
+        providers = LLMProvider.objects.filter(hidden=False)
         serializer = LLMProviderSerializer(providers, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

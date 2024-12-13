@@ -19,7 +19,8 @@ class Command(BaseCommand):
                 Model.objects.get_or_create(
                     id=model_data["id"],
                     name=model_data["name"],
-                    provider=provider
+                    provider=provider,
+                    hidden=False
                 )
 
         self.stdout.write(self.style.SUCCESS("Data loaded successfully"))
