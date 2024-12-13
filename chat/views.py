@@ -129,7 +129,7 @@ class AddAPIKeyView(APIView):
             return Response(f"Invalid request data", status=status.HTTP_400_BAD_REQUEST)
         
         name = request.data['name']  
-        apiProvider_id = request.data['apiProvider_id']
+        apiProvider_id = int(request.data['apiProvider_id'])
         apiKey = request.data['apiKey']
         
         try:
@@ -170,6 +170,7 @@ class AddAPIKeyView(APIView):
         except LLMProvider.DoesNotExist:
             return Response(f"LLMProvider with id={apiProvider_id} does not exist", status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
+            print(e)
             return Response(f"Failed to save APIKey: {str(e)}", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         
