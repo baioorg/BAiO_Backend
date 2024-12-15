@@ -51,7 +51,7 @@ urlpatterns = [
     path("chat/sendMessage/", SendMessageView.as_view())
 
 
-    
+
 ]
 
 

@@ -70,7 +70,10 @@ class LLMProviderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = LLMProvider
-        fields = ['id', 'name', 'models']
+        fields = ['id', 'name', 'url', 'models']
+
+    
+
 
 
 
@@ -79,7 +82,7 @@ class APIKeySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = APIKey
-        fields = ['key', 'nickname', 'provider', 'created_at']
+        fields = ['id', 'key', 'nickname', 'provider', 'created_at']
         extra_kwargs = {
             'key': {'write_only': True},
             'created_at': {'read_only': True}
@@ -110,6 +113,7 @@ class AddAPIKeyViewSerializer(serializers.Serializer):
     name = serializers.CharField(required=True, max_length=255)
     apiProvider_id = serializers.IntegerField(required=True)
     apiKey = serializers.CharField(required=True, max_length=255)
+    url = serializers.CharField(required=False, max_length=255)
 
 class GetConversationSerializer(serializers.Serializer):
     conversation_id = serializers.IntegerField(required=True)

@@ -113,6 +113,11 @@ class RenameConversationView(APIView):
 
         return Response(f"Conversation successfully renamed to {new_title}", status=status.HTTP_200_OK)
     
+import openai
+from datetime import timedelta
+from django.utils.timezone import now
+
+
 class AddAPIKeyView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -123,13 +128,39 @@ class AddAPIKeyView(APIView):
         if not serializer.is_valid():
             return Response(f"Invalid request data", status=status.HTTP_400_BAD_REQUEST)
         
-        name = request.data['name']
-        apiProvider_id = request.data['apiProvider_id']
+        name = request.data['name']  
+        apiProvider_id = int(request.data['apiProvider_id'])
         apiKey = request.data['apiKey']
         
         try:
             # Retrieve the LLMProvider instance
-            apiProvider = LLMProvider.objects.get(id=apiProvider_id)
+            if(apiProvider_id == 0):
+                url = request.data.get("url")
+                if not url:
+                    return Response("When using a custom apiProvider, you need to specify a URL", status=status.HTTP_400_BAD_REQUEST)
+                apiProvider, created = LLMProvider.objects.get_or_create(name="Custom", url=url, hidden=True)
+
+                if created or now() - apiProvider.last_updated > timedelta(weeks=1):
+                    # Fetch models only if the provider is newly created or if its one week since it was last updated
+                    openai.api_key = apiKey
+                    openai.base_url = url
+
+                    try:
+                        models = openai.models.list()
+                        for model in models.data:
+                            Model.objects.get_or_create(name=model.id, provider=apiProvider)
+
+                        # Update the `last_updated` field
+                        apiProvider.last_updated = now()
+                        apiProvider.save()
+                    except Exception as e:
+                        return Response(f"Failed to query models, url may be invalid or not openai compatible: {str(e)}", status=status.HTTP_400_BAD_REQUEST)
+
+                
+            else:
+                apiProvider = LLMProvider.objects.get(id=apiProvider_id)
+                url = apiProvider.url
+
             # Create the API key instance
             apiKeys = APIKey.objects.create(user=user, nickname=name, apiProvider=apiProvider, key=apiKey)
             
@@ -139,6 +170,7 @@ class AddAPIKeyView(APIView):
         except LLMProvider.DoesNotExist:
             return Response(f"LLMProvider with id={apiProvider_id} does not exist", status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
+            print(e)
             return Response(f"Failed to save APIKey: {str(e)}", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         
@@ -184,9 +216,12 @@ class SendMessageView(APIView):
             return Response(f"There are no conversations with id {conversation_id} connected to this user", status=status.HTTP_404_NOT_FOUND)
         
         try:
-            apikey = APIKey.objects.get(id=apikey_id, user=user).key
+            apikey_object = APIKey.objects.get(id=apikey_id, user=user)
         except APIKey.DoesNotExist:
             return Response(f"There are no apikeys with id {apikey_id} connected to this user", status=status.HTTP_404_NOT_FOUND)
+
+        url = apikey_object.apiProvider.url
+        apikey = apikey_object.key
 
         Message.objects.create(
             conversation=conversation,
@@ -203,7 +238,13 @@ class SendMessageView(APIView):
         ]
 
         queue = Queue()
-        message_container = Message_Container(messages, queue, apikey, model, conversation_id)
+        message_container = Message_Container(messages=messages, 
+                                              queue=queue, 
+                                              apikey=apikey, 
+                                              model=model, 
+                                              conversation_id=conversation_id, 
+                                              url=url
+                                              )
         message_container.start()
 
         full_response = []
@@ -242,21 +283,15 @@ class GetLLMProvidersView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        providers = LLMProvider.objects.all()
+        providers = LLMProvider.objects.filter(hidden=False)
         serializer = LLMProviderSerializer(providers, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class GetCSVFileView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
+    def get(self, request, file_id):
         user = request.user
-
-        serializers = GetCSVFileViewSerializer(request.query_params)
-        if not serializers.is_valid():
-            return Response("Invalid request data", status=status.HTTP_400_BAD_REQUEST)
-        
-        file_id = request.query_params.get("file_id")
 
         try:
             csvfile = CSVFile.objects.get(id=file_id, message__conversation__user=user)
